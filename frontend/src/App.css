@@ -51,6 +51,44 @@
   color: #667eea;
 }
 
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 12px;
+  border-left: 2px solid #f3f4f6;
+}
+
+.user-name {
+  color: #374151;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.btn-logout {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s ease;
+  font-size: 14px;
+}
+
+.btn-logout:hover {
+  background: #dc2626;
+}
+
+.login-section {
+  display: flex;
+  align-items: center;
+  padding-left: 12px;
+  border-left: 2px solid #f3f4f6;
+}
+
+
 .footer {
   background: rgba(255, 255, 255, 0.95);
   padding: 24px 0;

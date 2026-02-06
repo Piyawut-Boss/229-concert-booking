@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import axios from 'axios'
+import { useAuth } from '../context/AuthContext'
 
 function BookingModal({ concert, onClose, onSuccess }) {
+  const { user } = useAuth()
   const [formData, setFormData] = useState({
-    customerName: '',
-    customerEmail: '',
+    customerName: user?.name || '',
+    customerEmail: user?.email || '',
     quantity: 1
   })
   const [loading, setLoading] = useState(false)
@@ -26,7 +28,13 @@ function BookingModal({ concert, onClose, onSuccess }) {
       const response = await axios.post('/api/reservations', {
         concertId: concert.id,
         ...formData,
-        quantity: parseInt(formData.quantity)
+        quantity: parseInt(formData.quantity),
+        googleAuth: true,
+        googleToken: user?.token
+      }, {
+        headers: {
+          'Authorization': `Bearer ${user?.token}`
+        }
       })
 
       alert(`✅ จองบัตรสำเร็จ!\n\nหมายเลขการจอง: ${response.data.reservation.id}\nจำนวนบัตร: ${response.data.reservation.quantity}\nราคารวม: ฿${response.data.reservation.totalPrice.toLocaleString()}\n\nกรุณาตรวจสอบอีเมลของคุณ`)
@@ -39,6 +47,38 @@ function BookingModal({ concert, onClose, onSuccess }) {
   }
 
   const totalPrice = concert.price * formData.quantity
+
+  if (!user) {
+    return (
+      <div className="modal-overlay" onClick={onClose}>
+        <div className="modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <h2>จองบัตรคอนเสิร์ต</h2>
+            <button className="modal-close" onClick={onClose}>×</button>
+          </div>
+
+          <div style={{padding: '40px', textAlign: 'center', background: '#eff6ff', borderRadius: '8px'}}>
+            <h3 style={{marginBottom: '12px', color: '#1e40af', fontSize: '24px'}}>
+              ⚠️ กรุณาเข้าสู่ระบบก่อน
+            </h3>
+            <p style={{marginBottom: '20px', color: '#1e3a8a', fontSize: '16px'}}>
+              คุณต้องเข้าสู่ระบบผ่าน Google account เพื่อจองบัตร
+            </p>
+            <p style={{marginBottom: '24px', color: '#1e3a8a', fontSize: '14px', opacity: 0.8}}>
+              คลิกปุ่ม "Sign in" ในหัวข้อเพื่อเข้าสู่ระบบ
+            </p>
+            <button
+              className="btn btn-secondary"
+              onClick={onClose}
+              style={{padding: '12px 32px', fontSize: '16px'}}
+            >
+              ปิด
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="modal-overlay" onClick={onClose}>

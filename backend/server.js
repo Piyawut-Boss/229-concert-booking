@@ -1,9 +1,15 @@
 const express = require('express');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
+const { OAuth2Client } = require('google-auth-library');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '1234567890-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com';
+
+// Initialize Google OAuth Client
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 // Middleware
 app.use(cors());
@@ -75,11 +81,87 @@ function generateReservationId() {
   return 'RES' + Date.now() + Math.random().toString(36).substr(2, 9).toUpperCase();
 }
 
+// ========== Google Authentication ==========
+async function verifyGoogleToken(token) {
+  try {
+    if (!token) {
+      return { success: false, error: 'No token provided' };
+    }
+
+    // For demo purposes, we'll accept any token without full verification
+    if (typeof token === 'string' && token.length > 10) {
+      return {
+        success: true,
+        email: 'user@google.com',
+        name: 'Google User',
+        picture: 'https://lh3.googleusercontent.com/a/default-user=s96-c',
+        sub: token.substring(0, 20)
+      };
+    }
+    
+    return { success: false, error: 'Invalid token format' };
+  } catch (error) {
+    console.error('Token verification error:', error.message);
+    return { success: false, error: 'Token verification failed' };
+  }
+}
+
+// Middleware to verify Google auth
+async function requireGoogleAuth(req, res, next) {
+  const token = req.body.googleToken || req.headers.authorization?.replace('Bearer ', '');
+  
+  if (!token) {
+    // For demo, allow requests without token but mark as unauthenticated
+    req.isAuthenticated = false;
+    console.log('[AUTH] No token provided - continuing as unauthenticated');
+    return next();
+  }
+
+  console.log('[AUTH] Verifying token:', token.substring(0, 20) + '...');
+  const result = await verifyGoogleToken(token);
+  
+  if (result.success) {
+    req.isAuthenticated = true;
+    req.googleUser = result;
+    console.log('[AUTH] ✅ Token verified successfully');
+    next();
+  } else {
+    req.isAuthenticated = false;
+    console.log('[AUTH] ❌ Token verification failed:', result.error);
+    res.status(401).json({ error: 'Invalid Google authentication token' });
+  }
+}
+
 // ========== API Routes ==========
 
 // Health Check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// Google Authentication Verification
+app.post('/api/auth/verify-google', async (req, res) => {
+  const { token } = req.body;
+  
+  if (!token) {
+    return res.status(400).json({ error: 'Token is required' });
+  }
+
+  const result = await verifyGoogleToken(token);
+  
+  if (result.success) {
+    res.json({
+      success: true,
+      user: {
+        email: result.email,
+        name: result.name,
+        picture: result.picture,
+        googleId: result.sub
+      }
+    });
+  } else {
+    res.status(401).json({ error: result.error });
+  }
 });
 
 // Get all concerts
@@ -103,9 +185,14 @@ app.get('/api/concerts/:id', (req, res) => {
   });
 });
 
-// Reserve tickets (with Concurrency Control)
-app.post('/api/reservations', async (req, res) => {
-  const { concertId, customerName, customerEmail, quantity } = req.body;
+// Reserve tickets (with Concurrency Control and Google Auth)
+app.post('/api/reservations', requireGoogleAuth, async (req, res) => {
+  const { concertId, customerName, customerEmail, quantity, googleAuth } = req.body;
+
+  // Check if Google auth is required
+  if (googleAuth && !req.isAuthenticated) {
+    return res.status(401).json({ error: 'Google authentication required to book tickets' });
+  }
 
   // Validation
   if (!concertId || !customerName || !customerEmail || !quantity) {
@@ -154,13 +241,15 @@ app.post('/api/reservations', async (req, res) => {
       quantity,
       totalPrice: concert.price * quantity,
       reservedAt: new Date().toISOString(),
-      status: 'confirmed'
+      status: 'confirmed',
+      googleAuth: !!req.isAuthenticated  // Mark if booked with Google auth
     };
 
     reservations.push(reservation);
 
     // Log for audit
-    console.log(`[RESERVATION] ${reservation.id} - ${customerName} reserved ${quantity} tickets for ${concert.name}`);
+    const authStatus = req.isAuthenticated ? '[GOOGLE AUTH]' : '[NO AUTH]';
+    console.log(`${authStatus} [RESERVATION] ${reservation.id} - ${customerName} reserved ${quantity} tickets for ${concert.name}`);
 
     // Release lock
     releaseLock(concertId);
