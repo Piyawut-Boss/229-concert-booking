@@ -258,3 +258,35 @@ tr:hover {
 .modal-close:hover {
   color: #111827;
 }
+
+/* --- Custom Scrollbar (ปรับแต่ง Scrollbar ทั้งเว็บ) --- */
+
+/* สำหรับ Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 8px;               /* ความกว้างของแกนแนวตั้ง */
+  height: 8px;              /* ความสูงของแกนแนวนอน */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;  /* พื้นหลังรางเลื่อนให้ใส */
+  margin: 4px;              /* เว้นระยะหัวท้ายนิดหน่อย */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;      /* สีของตัวเลื่อน (เทาอ่อนๆ) */
+  border-radius: 10px;      /* ความมนของขอบ */
+  border: 2px solid transparent; /* เทคนิคทำให้ตัวเลื่อนดูเล็กลง */
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a0a6af;      /* สีตอนเอาเมาส์ชี้ (เข้มขึ้นนิดนึง) */
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+/* สำหรับ Firefox */
+* {
+  scrollbar-width: thin;          /* ขนาดเล็ก */
+  scrollbar-color: #d1d5db transparent; /* สีตัวเลื่อน และ สีพื้นหลัง */
+}

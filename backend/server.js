@@ -7,7 +7,8 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // ========== Database Simulation ==========
 // ในระบบจริงจะใช้ PostgreSQL หรือ MongoDB
@@ -221,6 +222,11 @@ app.get('/api/admin/stats', (req, res) => {
     concerts: concerts.map(c => ({
       id: c.id,
       name: c.name,
+      artist: c.artist,          
+      date: c.date,              
+      venue: c.venue,            
+      imageUrl: c.imageUrl,      
+      price: c.price,            
       totalTickets: c.totalTickets,
       bookedTickets: c.totalTickets - c.availableTickets,
       availableTickets: c.availableTickets,
@@ -253,6 +259,7 @@ app.put('/api/admin/concerts/:id', async (req, res) => {
     if (updates.artist) concert.artist = updates.artist;
     if (updates.date) concert.date = updates.date;
     if (updates.venue) concert.venue = updates.venue;
+    if (updates.imageUrl) concert.imageUrl = updates.imageUrl; 
     if (updates.price !== undefined) concert.price = updates.price;
     if (updates.status) concert.status = updates.status;
     
