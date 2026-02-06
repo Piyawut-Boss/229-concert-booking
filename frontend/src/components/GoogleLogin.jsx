@@ -1,11 +1,12 @@
 import { GoogleLogin } from '@react-oauth/google'
+import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
 import './GoogleLogin.css'
 
 function GoogleLoginComponent() {
   const { login } = useAuth()
 
-  const handleLoginSuccess = (credentialResponse) => {
+  const handleLoginSuccess = async (credentialResponse) => {
     try {
       // Decode the JWT token to get user info
       const token = credentialResponse.credential
@@ -26,7 +27,28 @@ function GoogleLoginComponent() {
         googleId: payload.sub
       }
       
+      // Save user to context (immediately, for UI update)
       login(userData)
+
+      // Send login notification to backend (asynchronous, don't wait)
+      try {
+        await axios.post('/api/login', 
+          {
+            userName: userData.name,
+            userEmail: userData.email,
+            googleToken: token
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        )
+        console.log('✅ Login notification sent to server')
+      } catch (error) {
+        console.warn('⚠️ Could not send login notification:', error.message)
+        // Don't fail the login if email sending fails
+      }
     } catch (error) {
       console.error('Error decoding token:', error)
     }
@@ -37,7 +59,8 @@ function GoogleLoginComponent() {
   }
 
   return (
-    <div className="google-login-container">      <GoogleLogin
+    <div className="google-login-container">
+      <GoogleLogin
         onSuccess={handleLoginSuccess}
         onError={handleLoginError}
         text="signin"

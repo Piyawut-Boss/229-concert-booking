@@ -3,6 +3,7 @@ const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
 const { OAuth2Client } = require('google-auth-library');
 require('dotenv').config();
+const emailService = require('./services/emailService');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -251,6 +252,17 @@ app.post('/api/reservations', requireGoogleAuth, async (req, res) => {
     const authStatus = req.isAuthenticated ? '[GOOGLE AUTH]' : '[NO AUTH]';
     console.log(`${authStatus} [RESERVATION] ${reservation.id} - ${customerName} reserved ${quantity} tickets for ${concert.name}`);
 
+    // Send booking confirmation email asynchronously
+    // Non-blocking: email failure doesn't stop booking confirmation
+    // Email goes to: reservation.customerEmail (user's email, NOT system email)
+    if (process.env.SEND_BOOKING_EMAIL !== 'false') {
+      emailService.sendBookingConfirmationEmail(reservation, concert).catch(error => {
+        console.warn('[BOOKING] Email notification failed but booking confirmed:', error.message);
+      });
+    } else {
+      console.log('[BOOKING] Email notification disabled in .env');
+    }
+
     // Release lock
     releaseLock(concertId);
 
@@ -273,6 +285,58 @@ app.get('/api/reservations/:email', (req, res) => {
     r => r.customerEmail.toLowerCase() === req.params.email.toLowerCase()
   );
   res.json(userReservations);
+});
+
+// ========== LOGIN ENDPOINT WITH EMAIL NOTIFICATION ==========
+// POST /api/login - Handle Google OAuth login and send confirmation email
+//
+// Purpose:
+// - Authenticate user via Google OAuth token
+// - Send login confirmation email to user's email address (NOT system email)
+// - Return user data for frontend session
+//
+// Request Body:
+//   - userName: string (from Google profile)
+//   - userEmail: string (from Google OAuth token - RECIPIENT of email)
+//   - googleToken: string (JWT token)
+//
+// Email Flow:
+//   FROM: EMAIL_USER (from .env) - e.g., 6710110264@psu.ac.th
+//   TO: userEmail (user's own email) - e.g., alice@gmail.com
+//   Template: Personalized login confirmation
+//
+// Response: { success: true, user: { name, email } }
+app.post('/api/login', requireGoogleAuth, async (req, res) => {
+  const { userName, userEmail } = req.body;
+
+  if (!userName || !userEmail) {
+    return res.status(400).json({ error: 'Missing user information' });
+  }
+
+  try {
+    // Log authentication event
+    console.log('[LOGIN] Google OAuth authentication successful');
+    console.log(`        User: ${userName} (${userEmail})`);
+
+    // Send login confirmation email asynchronously
+    // Non-blocking: email failure doesn't stop login flow
+    if (process.env.SEND_LOGIN_EMAIL !== 'false') {
+      emailService.sendLoginEmail(userName, userEmail).catch(error => {
+        console.warn('[LOGIN] Email notification failed but login succeeded:', error.message);
+      });
+    } else {
+      console.log('[LOGIN] Email notification disabled in .env');
+    }
+
+    res.json({
+      success: true,
+      message: 'Login successful',
+      user: { name: userName, email: userEmail }
+    });
+  } catch (error) {
+    console.error('[LOGIN] Critical error:', error);
+    res.status(500).json({ error: 'Login failed' });
+  }
 });
 
 // ========== ADMIN ROUTES ==========
@@ -437,8 +501,18 @@ app.post('/api/admin/concerts', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🎵 Concert Ticket System Backend running on port ${PORT}`);
   console.log(`📊 Dashboard: http://localhost:${PORT}/api/health`);
   console.log(`🔐 Admin credentials: admin / admin123`);
+
+  // Test email configuration
+  console.log('\n[EMAIL] Testing email configuration...');
+  const emailConfigured = await emailService.testEmailConfiguration();
+  if (emailConfigured) {
+    console.log('[EMAIL] 📧 Email notifications enabled');
+  } else {
+    console.log('[EMAIL] ⚠️ Email notifications disabled - configure .env to enable');
+  }
+  console.log('');
 });
