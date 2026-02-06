@@ -1,9 +1,10 @@
+require('dotenv').config({ path: require('path').resolve(__dirname, '.env') });
 const express = require('express');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
 const { OAuth2Client } = require('google-auth-library');
-require('dotenv').config();
 const emailService = require('./services/emailService');
+const db = require('./config/database');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -16,54 +17,8 @@ const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 app.use(cors());
 app.use(express.json());
 
-// ========== Database Simulation ==========
-// ในระบบจริงจะใช้ PostgreSQL หรือ MongoDB
-let concerts = [
-  {
-    id: '1',
-    name: 'LAMPANG MUSIC FESTIVAL 2026',
-    artist: 'Various Artists',
-    date: '2026-03-15',
-    venue: 'ลานกาดกองต้า ลำปาง',
-    totalTickets: 1000,
-    availableTickets: 1000,
-    price: 1500,
-    status: 'open', // open, closed
-    imageUrl: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800'
-  },
-  {
-    id: '2',
-    name: 'CHIANG MAI JAZZ NIGHT',
-    artist: 'Jazz Ensemble',
-    date: '2026-04-20',
-    venue: 'Maya Lifestyle Shopping Center',
-    totalTickets: 500,
-    availableTickets: 500,
-    price: 2000,
-    status: 'open',
-    imageUrl: 'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=800'
-  },
-  {
-    id: '3',
-    name: 'ROCK CONCERT BANGKOK',
-    artist: 'The Rockers',
-    date: '2026-05-10',
-    venue: 'Impact Arena, Bangkok',
-    totalTickets: 5000,
-    availableTickets: 5000,
-    price: 2500,
-    status: 'open',
-    imageUrl: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800'
-  }
-];
-
-let reservations = [];
-let adminUsers = [
-  { username: 'admin', password: 'admin123', role: 'admin' }
-];
-
-// ========== Concurrency Control ==========
-// Lock mechanism สำหรับป้องกัน race condition
+// ========== Database Lock Mechanism ==========
+// Using in-memory locks for distributed concurrency control
 const locks = new Map();
 
 async function acquireLock(concertId) {
@@ -137,7 +92,7 @@ async function requireGoogleAuth(req, res, next) {
 
 // Health Check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+  res.json({ status: 'OK', timestamp: new Date().toISOString(), database: 'PostgreSQL' });
 });
 
 // Google Authentication Verification
@@ -166,24 +121,63 @@ app.post('/api/auth/verify-google', async (req, res) => {
 });
 
 // Get all concerts
-app.get('/api/concerts', (req, res) => {
-  const concertList = concerts.map(c => ({
-    ...c,
-    bookedTickets: c.totalTickets - c.availableTickets
-  }));
-  res.json(concertList);
+app.get('/api/concerts', async (req, res) => {
+  try {
+    const result = await db.query(
+      'SELECT id, name, artist, date, venue, total_tickets, available_tickets, price, status, image_url FROM concerts ORDER BY date ASC'
+    );
+    
+    const concerts = result.rows.map(c => ({
+      id: c.id,
+      name: c.name,
+      artist: c.artist,
+      date: c.date,
+      venue: c.venue,
+      totalTickets: parseInt(c.total_tickets),
+      availableTickets: parseInt(c.available_tickets),
+      bookedTickets: parseInt(c.total_tickets) - parseInt(c.available_tickets),
+      price: parseFloat(c.price),
+      status: c.status,
+      imageUrl: c.image_url
+    }));
+    
+    res.json(concerts);
+  } catch (error) {
+    console.error('Get concerts error:', error);
+    res.status(500).json({ error: 'Failed to fetch concerts' });
+  }
 });
 
 // Get concert by ID
-app.get('/api/concerts/:id', (req, res) => {
-  const concert = concerts.find(c => c.id === req.params.id);
-  if (!concert) {
-    return res.status(404).json({ error: 'Concert not found' });
+app.get('/api/concerts/:id', async (req, res) => {
+  try {
+    const result = await db.query(
+      'SELECT id, name, artist, date, venue, total_tickets, available_tickets, price, status, image_url FROM concerts WHERE id = $1',
+      [req.params.id]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Concert not found' });
+    }
+    
+    const c = result.rows[0];
+    res.json({
+      id: c.id,
+      name: c.name,
+      artist: c.artist,
+      date: c.date,
+      venue: c.venue,
+      totalTickets: parseInt(c.total_tickets),
+      availableTickets: parseInt(c.available_tickets),
+      bookedTickets: parseInt(c.total_tickets) - parseInt(c.available_tickets),
+      price: parseFloat(c.price),
+      status: c.status,
+      imageUrl: c.image_url
+    });
+  } catch (error) {
+    console.error('Get concert error:', error);
+    res.status(500).json({ error: 'Failed to fetch concert' });
   }
-  res.json({
-    ...concert,
-    bookedTickets: concert.totalTickets - concert.availableTickets
-  });
 });
 
 // Reserve tickets (with Concurrency Control and Google Auth)
@@ -208,12 +202,18 @@ app.post('/api/reservations', requireGoogleAuth, async (req, res) => {
   await acquireLock(concertId);
 
   try {
-    const concert = concerts.find(c => c.id === concertId);
+    // Get concert details
+    const concertResult = await db.query(
+      'SELECT id, name, artist, price, status, available_tickets FROM concerts WHERE id = $1',
+      [concertId]
+    );
 
-    if (!concert) {
+    if (concertResult.rows.length === 0) {
       releaseLock(concertId);
       return res.status(404).json({ error: 'Concert not found' });
     }
+
+    const concert = concertResult.rows[0];
 
     if (concert.status !== 'open') {
       releaseLock(concertId);
@@ -221,70 +221,117 @@ app.post('/api/reservations', requireGoogleAuth, async (req, res) => {
     }
 
     // Check availability (Critical Section)
-    if (concert.availableTickets < quantity) {
+    if (parseInt(concert.available_tickets) < quantity) {
       releaseLock(concertId);
       return res.status(400).json({ 
         error: 'Not enough tickets available',
-        available: concert.availableTickets
+        available: parseInt(concert.available_tickets)
       });
     }
-
-    // Atomic operation: Decrease tickets
-    concert.availableTickets -= quantity;
 
     // Create reservation
-    const reservation = {
-      id: generateReservationId(),
-      concertId,
-      concertName: concert.name,
-      customerName,
-      customerEmail,
-      quantity,
-      totalPrice: concert.price * quantity,
-      reservedAt: new Date().toISOString(),
-      status: 'confirmed',
-      googleAuth: !!req.isAuthenticated  // Mark if booked with Google auth
-    };
+    const reservationId = generateReservationId();
+    const totalPrice = parseFloat(concert.price) * quantity;
 
-    reservations.push(reservation);
+    // Start transaction: Update tickets and create reservation
+    await db.query('BEGIN');
+    
+    try {
+      // Update available tickets
+      await db.query(
+        'UPDATE concerts SET available_tickets = available_tickets - $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+        [quantity, concertId]
+      );
 
-    // Log for audit
-    const authStatus = req.isAuthenticated ? '[GOOGLE AUTH]' : '[NO AUTH]';
-    console.log(`${authStatus} [RESERVATION] ${reservation.id} - ${customerName} reserved ${quantity} tickets for ${concert.name}`);
+      // Insert reservation
+      await db.query(
+        `INSERT INTO reservations (id, concert_id, customer_name, customer_email, quantity, total_price, status, google_auth)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [reservationId, concertId, customerName, customerEmail, quantity, totalPrice, 'confirmed', req.isAuthenticated]
+      );
 
-    // Send booking confirmation email asynchronously
-    // Non-blocking: email failure doesn't stop booking confirmation
-    // Email goes to: reservation.customerEmail (user's email, NOT system email)
-    if (process.env.SEND_BOOKING_EMAIL !== 'false') {
-      emailService.sendBookingConfirmationEmail(reservation, concert).catch(error => {
-        console.warn('[BOOKING] Email notification failed but booking confirmed:', error.message);
+      await db.query('COMMIT');
+
+      // Log for audit
+      const authStatus = req.isAuthenticated ? '[GOOGLE AUTH]' : '[NO AUTH]';
+      console.log(`${authStatus} [RESERVATION] ${reservationId} - ${customerName} reserved ${quantity} tickets for ${concert.name}`);
+
+      // Send booking confirmation email asynchronously
+      // Non-blocking: email failure doesn't stop booking confirmation
+      if (process.env.SEND_BOOKING_EMAIL !== 'false') {
+        const reservation = {
+          id: reservationId,
+          concertId,
+          concertName: concert.name,
+          customerName,
+          customerEmail,
+          quantity,
+          totalPrice,
+          reservedAt: new Date().toISOString(),
+          status: 'confirmed',
+          googleAuth: req.isAuthenticated
+        };
+        emailService.sendBookingConfirmationEmail(reservation, concert).catch(error => {
+          console.warn('[BOOKING] Email notification failed but booking confirmed:', error.message);
+        });
+      } else {
+        console.log('[BOOKING] Email notification disabled in .env');
+      }
+
+      res.status(201).json({
+        success: true,
+        reservation: {
+          id: reservationId,
+          concertId,
+          concertName: concert.name,
+          customerName,
+          customerEmail,
+          quantity,
+          totalPrice,
+          reservedAt: new Date().toISOString(),
+          status: 'confirmed',
+          googleAuth: req.isAuthenticated
+        },
+        message: 'Reservation successful!'
       });
-    } else {
-      console.log('[BOOKING] Email notification disabled in .env');
+    } catch (txError) {
+      await db.query('ROLLBACK');
+      throw txError;
     }
-
-    // Release lock
-    releaseLock(concertId);
-
-    res.status(201).json({
-      success: true,
-      reservation,
-      message: 'Reservation successful!'
-    });
-
   } catch (error) {
-    releaseLock(concertId);
     console.error('Reservation error:', error);
     res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    releaseLock(concertId);
   }
 });
 
 // Get user reservations
-app.get('/api/reservations/:email', (req, res) => {
-  const userReservations = reservations.filter(
-    r => r.customerEmail.toLowerCase() === req.params.email.toLowerCase()
-  );
-  res.json(userReservations);
+app.get('/api/reservations/:email', async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT id, concert_id, customer_name, customer_email, quantity, total_price, status, google_auth, reserved_at
+       FROM reservations WHERE LOWER(customer_email) = LOWER($1) ORDER BY reserved_at DESC`,
+      [req.params.email]
+    );
+    
+    const reservations = result.rows.map(r => ({
+      id: r.id,
+      concertId: r.concert_id,
+      customerName: r.customer_name,
+      customerEmail: r.customer_email,
+      quantity: r.quantity,
+      totalPrice: parseFloat(r.total_price),
+      status: r.status,
+      googleAuth: r.google_auth,
+      reservedAt: r.reserved_at
+    }));
+    
+    res.json(reservations);
+  } catch (error) {
+    console.error('Get reservations error:', error);
+    res.status(500).json({ error: 'Failed to fetch reservations' });
+  }
 });
 
 // ========== LOGIN ENDPOINT WITH EMAIL NOTIFICATION ==========
@@ -342,92 +389,228 @@ app.post('/api/login', requireGoogleAuth, async (req, res) => {
 // ========== ADMIN ROUTES ==========
 
 // Admin Login
-app.post('/api/admin/login', (req, res) => {
-  const { username, password } = req.body;
-  const admin = adminUsers.find(
-    a => a.username === username && a.password === password
-  );
+app.post('/api/admin/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    
+    const result = await db.query(
+      'SELECT id, username, password, role FROM admin_users WHERE username = $1',
+      [username]
+    );
 
-  if (!admin) {
-    return res.status(401).json({ error: 'Invalid credentials' });
+    if (result.rows.length === 0 || result.rows[0].password !== password) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    res.json({
+      success: true,
+      user: { username: result.rows[0].username, role: result.rows[0].role },
+      token: 'admin-token-' + uuidv4()
+    });
+  } catch (error) {
+    console.error('Admin login error:', error);
+    res.status(500).json({ error: 'Login failed' });
   }
-
-  res.json({
-    success: true,
-    user: { username: admin.username, role: admin.role },
-    token: 'admin-token-' + uuidv4() // ในระบบจริงใช้ JWT
-  });
 });
 
 // Admin: Get all reservations
-app.get('/api/admin/reservations', (req, res) => {
-  res.json(reservations);
+app.get('/api/admin/reservations', async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT r.id, r.concert_id, c.name as concert_name, r.customer_name, r.customer_email, r.quantity, 
+              r.total_price, r.status, r.google_auth, r.reserved_at
+       FROM reservations r
+       JOIN concerts c ON r.concert_id = c.id
+       ORDER BY r.reserved_at DESC`
+    );
+    
+    const reservations = result.rows.map(r => ({
+      id: r.id,
+      concertId: r.concert_id,
+      concertName: r.concert_name,
+      customerName: r.customer_name,
+      customerEmail: r.customer_email,
+      quantity: r.quantity,
+      totalPrice: parseFloat(r.total_price),
+      status: r.status,
+      googleAuth: r.google_auth,
+      reservedAt: r.reserved_at
+    }));
+    
+    res.json(reservations);
+  } catch (error) {
+    console.error('Get reservations error:', error);
+    res.status(500).json({ error: 'Failed to fetch reservations' });
+  }
 });
 
 // Admin: Get dashboard stats
-app.get('/api/admin/stats', (req, res) => {
-  const stats = {
-    totalConcerts: concerts.length,
-    activeConcerts: concerts.filter(c => c.status === 'open').length,
-    totalReservations: reservations.length,
-    totalRevenue: reservations.reduce((sum, r) => sum + r.totalPrice, 0),
-    concerts: concerts.map(c => ({
-      id: c.id,
-      name: c.name,
-      totalTickets: c.totalTickets,
-      bookedTickets: c.totalTickets - c.availableTickets,
-      availableTickets: c.availableTickets,
-      revenue: (c.totalTickets - c.availableTickets) * c.price,
-      status: c.status
-    }))
-  };
-  res.json(stats);
+app.get('/api/admin/stats', async (req, res) => {
+  try {
+    // Get concert stats
+    const concertResult = await db.query(`
+      SELECT 
+        COUNT(*) as total_concerts,
+        COUNT(CASE WHEN status = 'open' THEN 1 END) as active_concerts
+      FROM concerts
+    `);
+
+    // Get reservation stats
+    const reservationResult = await db.query(`
+      SELECT 
+        COUNT(*) as total_reservations,
+        COALESCE(SUM(total_price), 0) as total_revenue
+      FROM reservations
+      WHERE status = 'confirmed'
+    `);
+
+    // Get detailed concert stats
+    const detailedResult = await db.query(`
+      SELECT 
+        c.id,
+        c.name,
+        c.total_tickets,
+        c.available_tickets,
+        c.price,
+        c.status,
+        COUNT(r.id) as booked_count,
+        COALESCE(SUM(r.total_price), 0) as revenue
+      FROM concerts c
+      LEFT JOIN reservations r ON c.id = r.concert_id AND r.status = 'confirmed'
+      GROUP BY c.id, c.name, c.total_tickets, c.available_tickets, c.price, c.status
+      ORDER BY c.id
+    `);
+
+    const stats = {
+      totalConcerts: parseInt(concertResult.rows[0].total_concerts),
+      activeConcerts: parseInt(concertResult.rows[0].active_concerts),
+      totalReservations: parseInt(reservationResult.rows[0].total_reservations),
+      totalRevenue: parseFloat(reservationResult.rows[0].total_revenue),
+      concerts: detailedResult.rows.map(c => ({
+        id: c.id,
+        name: c.name,
+        totalTickets: parseInt(c.total_tickets),
+        bookedTickets: parseInt(c.booked_count),
+        availableTickets: parseInt(c.available_tickets),
+        revenue: parseFloat(c.revenue),
+        status: c.status
+      }))
+    };
+
+    res.json(stats);
+  } catch (error) {
+    console.error('Get stats error:', error);
+    res.status(500).json({ error: 'Failed to fetch stats' });
+  }
 });
 
 // Admin: Update concert
 app.put('/api/admin/concerts/:id', async (req, res) => {
   const { id } = req.params;
-  const updates = req.body;
+  const { name, artist, date, venue, price, status, totalTickets } = req.body;
 
   await acquireLock(id);
 
   try {
-    const concertIndex = concerts.findIndex(c => c.id === id);
+    // Get current concert
+    const concertResult = await db.query(
+      'SELECT id, total_tickets, available_tickets FROM concerts WHERE id = $1',
+      [id]
+    );
     
-    if (concertIndex === -1) {
+    if (concertResult.rows.length === 0) {
       releaseLock(id);
       return res.status(404).json({ error: 'Concert not found' });
     }
 
-    // Update allowed fields
-    const concert = concerts[concertIndex];
-    
-    if (updates.name) concert.name = updates.name;
-    if (updates.artist) concert.artist = updates.artist;
-    if (updates.date) concert.date = updates.date;
-    if (updates.venue) concert.venue = updates.venue;
-    if (updates.price !== undefined) concert.price = updates.price;
-    if (updates.status) concert.status = updates.status;
-    
+    const currentConcert = concertResult.rows[0];
+    const bookedTickets = parseInt(currentConcert.total_tickets) - parseInt(currentConcert.available_tickets);
+
     // Special handling for ticket updates
-    if (updates.totalTickets !== undefined) {
-      const bookedTickets = concert.totalTickets - concert.availableTickets;
-      if (updates.totalTickets < bookedTickets) {
-        releaseLock(id);
-        return res.status(400).json({ 
-          error: 'Cannot reduce total tickets below booked tickets',
-          bookedTickets
-        });
-      }
-      concert.availableTickets = updates.totalTickets - bookedTickets;
-      concert.totalTickets = updates.totalTickets;
+    if (totalTickets !== undefined && totalTickets < bookedTickets) {
+      releaseLock(id);
+      return res.status(400).json({ 
+        error: 'Cannot reduce total tickets below booked tickets',
+        bookedTickets
+      });
     }
 
+    let newAvailableTickets = parseInt(currentConcert.available_tickets);
+    let newTotalTickets = totalTickets || parseInt(currentConcert.total_tickets);
+    
+    if (totalTickets !== undefined) {
+      const oldTotalTickets = parseInt(currentConcert.total_tickets);
+      const difference = totalTickets - oldTotalTickets;
+      newAvailableTickets = parseInt(currentConcert.available_tickets) + difference;
+    }
+
+    // Build dynamic update query
+    const updates = [];
+    const params = [];
+    let paramIndex = 1;
+
+    if (name) {
+      updates.push(`name = $${paramIndex++}`);
+      params.push(name);
+    }
+    if (artist) {
+      updates.push(`artist = $${paramIndex++}`);
+      params.push(artist);
+    }
+    if (date) {
+      updates.push(`date = $${paramIndex++}`);
+      params.push(date);
+    }
+    if (venue) {
+      updates.push(`venue = $${paramIndex++}`);
+      params.push(venue);
+    }
+    if (price !== undefined) {
+      updates.push(`price = $${paramIndex++}`);
+      params.push(price);
+    }
+    if (status) {
+      updates.push(`status = $${paramIndex++}`);
+      params.push(status);
+    }
+    if (totalTickets !== undefined) {
+      updates.push(`total_tickets = $${paramIndex++}`);
+      params.push(totalTickets);
+      updates.push(`available_tickets = $${paramIndex++}`);
+      params.push(newAvailableTickets);
+    }
+
+    updates.push(`updated_at = CURRENT_TIMESTAMP`);
+    params.push(id);
+
+    const updateQuery = `UPDATE concerts SET ${updates.join(', ')} WHERE id = $${paramIndex} RETURNING *`;
+
+    const result = await db.query(updateQuery, params);
+
+    if (result.rows.length === 0) {
+      releaseLock(id);
+      return res.status(404).json({ error: 'Concert not found' });
+    }
+
+    const c = result.rows[0];
     console.log(`[ADMIN] Concert ${id} updated`);
     
     releaseLock(id);
-    res.json({ success: true, concert });
-
+    res.json({ 
+      success: true, 
+      concert: {
+        id: c.id,
+        name: c.name,
+        artist: c.artist,
+        date: c.date,
+        venue: c.venue,
+        totalTickets: parseInt(c.total_tickets),
+        availableTickets: parseInt(c.available_tickets),
+        price: parseFloat(c.price),
+        status: c.status,
+        imageUrl: c.image_url
+      }
+    });
   } catch (error) {
     releaseLock(id);
     console.error('Update error:', error);
@@ -439,80 +622,144 @@ app.put('/api/admin/concerts/:id', async (req, res) => {
 app.delete('/api/admin/reservations/:id', async (req, res) => {
   const { id } = req.params;
   
-  const reservationIndex = reservations.findIndex(r => r.id === id);
-  
-  if (reservationIndex === -1) {
-    return res.status(404).json({ error: 'Reservation not found' });
-  }
-
-  const reservation = reservations[reservationIndex];
-  
-  await acquireLock(reservation.concertId);
-
   try {
-    const concert = concerts.find(c => c.id === reservation.concertId);
+    // Get reservation
+    const reservationResult = await db.query(
+      'SELECT id, concert_id, quantity FROM reservations WHERE id = $1',
+      [id]
+    );
     
-    if (concert) {
-      // Return tickets
-      concert.availableTickets += reservation.quantity;
+    if (reservationResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Reservation not found' });
     }
 
-    // Remove reservation
-    reservations.splice(reservationIndex, 1);
+    const reservation = reservationResult.rows[0];
+    
+    await acquireLock(reservation.concert_id);
 
-    console.log(`[ADMIN] Reservation ${id} cancelled, ${reservation.quantity} tickets returned`);
+    try {
+      // Start transaction
+      await db.query('BEGIN');
 
-    releaseLock(reservation.concertId);
-    res.json({ success: true, message: 'Reservation cancelled' });
+      // Update concert available tickets
+      await db.query(
+        'UPDATE concerts SET available_tickets = available_tickets + $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+        [reservation.quantity, reservation.concert_id]
+      );
 
+      // Update reservation status
+      await db.query(
+        'UPDATE reservations SET status = $1 WHERE id = $2',
+        ['cancelled', id]
+      );
+
+      await db.query('COMMIT');
+
+      console.log(`[ADMIN] Reservation ${id} cancelled, ${reservation.quantity} tickets returned`);
+
+      res.json({ success: true, message: 'Reservation cancelled' });
+    } catch (txError) {
+      await db.query('ROLLBACK');
+      throw txError;
+    }
   } catch (error) {
-    releaseLock(reservation.concertId);
     console.error('Cancel error:', error);
     res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    if (req.params.id) {
+      const resResult = await db.query('SELECT concert_id FROM reservations WHERE id = $1', [req.params.id]).catch(() => ({ rows: [] }));
+      if (resResult.rows.length > 0) {
+        releaseLock(resResult.rows[0].concert_id);
+      }
+    }
   }
 });
 
 // Admin: Create new concert
-app.post('/api/admin/concerts', (req, res) => {
+app.post('/api/admin/concerts', async (req, res) => {
   const { name, artist, date, venue, totalTickets, price } = req.body;
 
   if (!name || !artist || !date || !venue || !totalTickets || !price) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  const newConcert = {
-    id: String(concerts.length + 1),
-    name,
-    artist,
-    date,
-    venue,
-    totalTickets,
-    availableTickets: totalTickets,
-    price,
-    status: 'open',
-    imageUrl: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800'
-  };
+  try {
+    const result = await db.query(
+      `INSERT INTO concerts (name, artist, date, venue, total_tickets, available_tickets, price, status, image_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       RETURNING *`,
+      [
+        name,
+        artist,
+        date,
+        venue,
+        totalTickets,
+        totalTickets,
+        price,
+        'open',
+        'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800'
+      ]
+    );
 
-  concerts.push(newConcert);
-  
-  console.log(`[ADMIN] New concert created: ${newConcert.name}`);
-  
-  res.status(201).json({ success: true, concert: newConcert });
+    const c = result.rows[0];
+    console.log(`[ADMIN] New concert created: ${c.name}`);
+    
+    res.status(201).json({ 
+      success: true, 
+      concert: {
+        id: c.id,
+        name: c.name,
+        artist: c.artist,
+        date: c.date,
+        venue: c.venue,
+        totalTickets: parseInt(c.total_tickets),
+        availableTickets: parseInt(c.available_tickets),
+        price: parseFloat(c.price),
+        status: c.status,
+        imageUrl: c.image_url
+      }
+    });
+  } catch (error) {
+    console.error('Create concert error:', error);
+    res.status(500).json({ error: 'Failed to create concert' });
+  }
 });
 
 // Start server
-app.listen(PORT, async () => {
-  console.log(`🎵 Concert Ticket System Backend running on port ${PORT}`);
-  console.log(`📊 Dashboard: http://localhost:${PORT}/api/health`);
-  console.log(`🔐 Admin credentials: admin / admin123`);
+const startServer = async () => {
+  try {
+    // Test database connection
+    const connected = await db.testConnection();
+    
+    if (!connected) {
+      console.error('[STARTUP] Failed to connect to database');
+      process.exit(1);
+    }
 
-  // Test email configuration
-  console.log('\n[EMAIL] Testing email configuration...');
-  const emailConfigured = await emailService.testEmailConfiguration();
-  if (emailConfigured) {
-    console.log('[EMAIL] 📧 Email notifications enabled');
-  } else {
-    console.log('[EMAIL] ⚠️ Email notifications disabled - configure .env to enable');
+    // Initialize database with schema and seed data
+    await db.initializeDatabase();
+
+    app.listen(PORT, () => {
+      console.log(`🎵 Concert Ticket System Backend running on port ${PORT}`);
+      console.log(`📊 Dashboard: http://localhost:${PORT}/api/health`);
+      console.log(`🔐 Admin credentials: admin / admin123`);
+      console.log(`📦 Database: PostgreSQL (${process.env.DATABASE_URL || 'localhost:5432'})`);
+
+      // Test email configuration
+      console.log('\n[EMAIL] Testing email configuration...');
+      emailService.testEmailConfiguration().then(emailConfigured => {
+        if (emailConfigured) {
+          console.log('[EMAIL] 📧 Email notifications enabled');
+        } else {
+          console.log('[EMAIL] ⚠️ Email notifications disabled - configure .env to enable');
+        }
+        console.log('');
+      });
+    });
+  } catch (error) {
+    console.error('[STARTUP] Failed to start server:', error);
+    process.exit(1);
   }
-  console.log('');
-});
+};
+
+startServer();

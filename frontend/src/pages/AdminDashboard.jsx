@@ -318,8 +318,8 @@ function AdminDashboard() {
 
 function EditConcertForm({ concert, onSave, onCancel }) {
   const [formData, setFormData] = useState({
-    totalTickets: concert.totalTickets,
-    price: concert.price
+    totalTickets: concert?.totalTickets ?? 0,
+    price: concert?.price ?? 0
   })
 
   const handleSubmit = (e) => {
