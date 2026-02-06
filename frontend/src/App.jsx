@@ -1,13 +1,17 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 import HomePage from './pages/HomePage'
 import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
 import MyReservations from './pages/MyReservations'
+import GoogleLoginComponent from './components/GoogleLogin'
+import { AuthProvider, useAuth } from './context/AuthContext'
 import './App.css'
 
-function App() {
+function AppContent() {
+  const { user, logout } = useAuth()
+
   return (
-    <Router>
       <div className="app">
         <nav className="navbar">
           <div className="container nav-container">
@@ -18,6 +22,16 @@ function App() {
               <Link to="/" className="nav-link">หน้าหลัก</Link>
               <Link to="/my-reservations" className="nav-link">การจองของฉัน</Link>
               <Link to="/admin" className="nav-link">Admin</Link>
+              {user ? (
+                <div className="user-section">
+                  <span className="user-name">👤 {user.name}</span>
+                  <button className="btn-logout" onClick={logout}>Logout</button>
+                </div>
+              ) : (
+                <div className="login-section">
+                  <GoogleLoginComponent />
+                </div>
+              )}
             </div>
           </div>
         </nav>
@@ -38,7 +52,20 @@ function App() {
           </div>
         </footer>
       </div>
-    </Router>
+    )
+  }
+
+function App() {
+  const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
+
+  return (
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <AuthProvider>
+        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <AppContent />
+        </Router>
+      </AuthProvider>
+    </GoogleOAuthProvider>
   )
 }
 

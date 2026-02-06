@@ -1,26 +1,53 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
+import { useAuth } from '../context/AuthContext'
 
 function MyReservations() {
-  const [email, setEmail] = useState('')
+  const { user } = useAuth()
   const [reservations, setReservations] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [searched, setSearched] = useState(false)
+  const [loading, setLoading] = useState(true)
 
-  const handleSearch = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setSearched(true)
-
-    try {
-      const response = await axios.get(`/api/reservations/${email}`)
-      setReservations(response.data)
+  useEffect(() => {
+    if (!user || !user.email) {
       setLoading(false)
-    } catch (error) {
-      console.error('Error fetching reservations:', error)
-      setReservations([])
-      setLoading(false)
+      return
     }
+
+    // Fetch reservations automatically when user is logged in
+    const fetchReservations = async () => {
+      try {
+        setLoading(true)
+        const response = await axios.get(`/api/reservations/${user.email}`)
+        setReservations(response.data)
+      } catch (error) {
+        console.error('Error fetching reservations:', error)
+        setReservations([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchReservations()
+  }, [user])
+
+  if (!user) {
+    return (
+      <div className="page-content">
+        <div className="container">
+          <div className="page-header">
+            <h1>📋 การจองของฉัน</h1>
+            <p>ตรวจสอบสถานะการจองบัตรของคุณ</p>
+          </div>
+
+          <div className="card" style={{textAlign: 'center', padding: '60px', background: '#eff6ff', borderRadius: '8px'}}>
+            <h3 style={{color: '#1e40af', marginBottom: '12px'}}>⚠️ กรุณาเข้าสู่ระบบ</h3>
+            <p style={{color: '#1e3a8a', marginTop: '12px'}}>
+              คุณต้องเข้าสู่ระบบเพื่อดูการจองของคุณ
+            </p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -31,36 +58,31 @@ function MyReservations() {
           <p>ตรวจสอบสถานะการจองบัตรของคุณ</p>
         </div>
 
-        <div className="card" style={{maxWidth: '600px', margin: '0 auto 30px'}}>
-          <form onSubmit={handleSearch}>
-            <div className="input-group">
-              <label>ค้นหาด้วยอีเมล</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="กรอกอีเมลที่ใช้จอง"
-                required
-              />
-            </div>
-            <button type="submit" className="btn btn-primary" style={{width: '100%'}}>
-              {loading ? 'กำลังค้นหา...' : 'ค้นหา'}
-            </button>
-          </form>
+        <div style={{background: 'white', padding: '20px', borderRadius: '8px', marginBottom: '30px'}}>
+          <p style={{color: '#374151', marginBottom: '8px'}}>
+            <strong>ผู้ใช้:</strong> {user.name}
+          </p>
+          <p style={{color: '#6b7280'}}>
+            <strong>อีเมล:</strong> {user.email}
+          </p>
         </div>
 
-        {loading && <div className="spinner"></div>}
+        {loading && (
+          <div style={{textAlign: 'center', padding: '60px'}}>
+            <div className="spinner"></div>
+          </div>
+        )}
 
-        {searched && !loading && reservations.length === 0 && (
+        {!loading && reservations.length === 0 && (
           <div className="card" style={{textAlign: 'center', padding: '60px'}}>
             <h2>ไม่พบการจอง</h2>
             <p style={{color: '#6b7280', marginTop: '12px'}}>
-              ไม่พบการจองที่เกี่ยวข้องกับอีเมล {email}
+              คุณยังไม่มีการจองบัตรใดๆ
             </p>
           </div>
         )}
 
-        {reservations.length > 0 && (
+        {!loading && reservations.length > 0 && (
           <div>
             <h2 style={{color: 'white', marginBottom: '20px'}}>
               พบ {reservations.length} รายการจอง
