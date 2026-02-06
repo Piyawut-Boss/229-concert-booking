@@ -479,9 +479,9 @@ function AdminDashboard() {
                       <td>{res.customerName}</td>
                       <td>{res.customerEmail}</td>
                       <td>{res.quantity}</td>
-                      <td>฿{res.totalPrice.toLocaleString()}</td>
+                      <td>฿{res.totalPrice?.toLocaleString() || 0}</td>
                       <td>
-                        {new Date(res.reservedAt).toLocaleString("th-TH")}
+                        {res.reservedAt ? new Date(res.reservedAt).toLocaleString('th-TH') : '-'}
                       </td>
                       <td>
                         <span className="badge badge-success">
@@ -754,7 +754,7 @@ function EditConcertModal({ concert, onSave, onCancel }) {
             >
               บันทึกการแก้ไข
             </button>
-          </div>
+          </div> 
         </form>
       </div>
     </div>
