@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import "./AdminDashboard.css"; // อย่าลืมบรรทัดนี้เพื่อดึง CSS มาใช้
+import { Search } from "lucide-react";
+import "./AdminDashboard.css";
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -11,6 +12,8 @@ function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [editingConcert, setEditingConcert] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   // --- ฟังก์ชันจัดการ URL รูปภาพ (ฉบับแก้ไขสมบูรณ์) ---
   const getImageUrl = (url) => {
@@ -114,6 +117,22 @@ function AdminDashboard() {
       );
     }
   };
+
+  const filteredConcerts =
+    stats?.concerts.filter((concert) => {
+      const matchesSearch =
+        (concert.name?.toLowerCase() || "").includes(
+          searchTerm.toLowerCase(),
+        ) ||
+        (concert.artist?.toLowerCase() || "").includes(
+          searchTerm.toLowerCase(),
+        );
+
+      const matchesStatus =
+        statusFilter === "all" || concert.status === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    }) || [];
 
   const handleCreateConcert = async (concertData) => {
     try {
@@ -225,12 +244,40 @@ function AdminDashboard() {
                       justifyContent: "space-between",
                       alignItems: "center",
                       marginBottom: "24px",
+                      flexWrap: "wrap",
+                      gap: "16px",
                     }}
                   >
-                    <h2 style={{ margin: 0 }}>สรุปรายคอนเสิร์ต</h2>
-                    <span style={{ fontSize: "14px", color: "#6b7280" }}>
-                      ข้อมูลล่าสุด
-                    </span>
+                    <div>
+                      <h2 style={{ margin: 0 }}>สรุปรายคอนเสิร์ต</h2>
+                      <span style={{ fontSize: "14px", color: "#6b7280" }}>
+                        ค้นหาพบ {filteredConcerts.length} รายการ
+                      </span>
+                    </div>
+
+                    {/* Filter & Search Inputs */}
+                    <div className="filters-container">
+                      <div className="search-wrapper">
+                        <span className="search-icon">
+                          <Search size={18} color="#94a3b8" strokeWidth={2.5} />
+                        </span>
+                        <input
+                          type="text"
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="search-input"
+                        />
+                      </div>
+                      <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="status-select"
+                      >
+                        <option value="all">สถานะทั้งหมด</option>
+                        <option value="open">✅ เปิดขาย</option>
+                        <option value="closed">⛔ ปิดขาย</option>
+                      </select>
+                    </div>
                   </div>
 
                   <div className="table-container">
@@ -246,103 +293,144 @@ function AdminDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {stats.concerts.map((concert) => (
-                          <tr key={concert.id}>
-                            <td>
-                              <div className="concert-cell">
-                                {/* ส่วนแสดงรูปภาพพร้อม Fallback */}
-                                {concert.imageUrl ? (
-                                  <img
-                                    src={getImageUrl(concert.imageUrl)}
-                                    alt={concert.name}
-                                    className="concert-thumb"
+                        {filteredConcerts.length > 0 ? (
+                          filteredConcerts.map((concert) => (
+                            <tr key={concert.id}>
+                              <td>
+                                <div className="concert-cell">
+                                  <div
+                                    className="concert-thumb-container"
                                     style={{
-                                      display: "block",
-                                      objectFit: "cover",
-                                      borderRadius: "8px",
+                                      position: "relative",
+                                      width: "200px",
+                                      height: "250px",
                                     }}
-                                    onError={(e) => {
-                                      e.target.style.display = "none";
-                                      const fallback = e.target.parentElement.querySelector(".thumb-fallback");
-                                      if (fallback) fallback.style.display = "flex";
-                                    }}
-                                  />
-                                ) : null}
+                                  >
+                                    {concert.imageUrl && (
+                                      <img
+                                        src={getImageUrl(concert.imageUrl)}
+                                        alt={concert.name}
+                                        className="concert-thumb"
+                                        style={{
+                                          width: "100%",
+                                          height: "100%",
+                                          objectFit: "cover",
+                                          borderRadius: "8px",
+                                        }}
+                                        onError={(e) => {
+                                          e.target.style.display = "none";
+                                        }}
+                                      />
+                                    )}
 
-                                {/* ส่วนแสดงกล่องสีเทา (แสดงเมื่อรูปโหลดไม่ได้) */}
-                                <div
-                                  className="thumb-fallback"
+                                    <div
+                                      className="thumb-fallback"
+                                      style={{
+                                        position: "absolute",
+                                        top: 0,
+                                        left: 0,
+                                        width: "100%",
+                                        height: "100%",
+                                        backgroundColor: "#e2e8f0",
+                                        borderRadius: "8px",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        fontSize: "24px",
+                                        border: "1px solid #cbd5e1",
+                                        zIndex: -1, // ให้ไปอยู่ข้างหลังรูปภาพ
+                                      }}
+                                    >
+                                      🎵
+                                    </div>
+                                  </div>
+
+                                  <div className="concert-info-mini">
+                                    <span className="concert-name">
+                                      {concert.name}
+                                    </span>
+                                    <span className="concert-artist">
+                                      {concert.artist}
+                                    </span>
+                                  </div>
+                                </div>
+                              </td>
+                              <td>
+                                <span style={{ fontWeight: 500 }}>
+                                  {concert.totalTickets}
+                                </span>
+                              </td>
+                              <td>
+                                <span style={{ fontWeight: 500 }}>
+                                  {concert.bookedTickets}
+                                </span>
+                              </td>
+                              <td>
+                                <span
                                   style={{
-                                    display: concert.imageUrl ? "none" : "flex",
-                                    width: "50px",
-                                    height: "50px",
-                                    backgroundColor: "#e2e8f0",
-                                    borderRadius: "8px",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    fontSize: "24px",
-                                    border: "1px solid #cbd5e1",
+                                    color:
+                                      concert.availableTickets > 0
+                                        ? "#10b981"
+                                        : "#ef4444",
+                                    fontWeight: 600,
+                                    background:
+                                      concert.availableTickets > 0
+                                        ? "#ecfdf5"
+                                        : "#fef2f2",
+                                    padding: "4px 10px",
+                                    borderRadius: "6px",
+                                    fontSize: "14px",
                                   }}
                                 >
-                                  🎵
-                                </div>
-
-                                <div className="concert-info-mini">
-                                  <span
-                                    className="concert-name"
-                                    style={{ color: "#1e293b", fontWeight: "bold" }}
-                                  >
-                                    {concert.name}
-                                  </span>
-                                  <span className="concert-artist">
-                                    {concert.artist}
-                                  </span>
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              <span style={{ fontWeight: 500 }}>
-                                {concert.totalTickets}
-                              </span>
-                            </td>
-                            <td>
-                              <span style={{ fontWeight: 500 }}>
-                                {concert.bookedTickets}
-                              </span>
-                            </td>
-                            <td>
-                              <span
-                                style={{
-                                  color: concert.availableTickets > 0 ? "#10b981" : "#ef4444",
-                                  fontWeight: 600,
-                                  background: concert.availableTickets > 0 ? "#ecfdf5" : "#fef2f2",
-                                  padding: "4px 10px",
-                                  borderRadius: "6px",
-                                  fontSize: "14px",
-                                }}
-                              >
-                                {concert.availableTickets > 0 ? concert.availableTickets : "หมด"}
-                              </span>
-                            </td>
-                            <td>
-                              <span className="revenue-text">
-                                ฿{concert.revenue.toLocaleString()}
-                              </span>
-                            </td>
-                            <td>
-                              <span className={`badge ${concert.status === "open" ? "badge-success" : "badge-danger"}`}>
-                                {concert.status === "open" ? "เปิดขาย" : "ปิดขาย"}
-                              </span>
+                                  {concert.availableTickets > 0
+                                    ? concert.availableTickets
+                                    : "หมด"}
+                                </span>
+                              </td>
+                              <td>
+                                <span className="revenue-text">
+                                  ฿{concert.revenue.toLocaleString()}
+                                </span>
+                              </td>
+                              <td>
+                                <span
+                                  className={`badge ${concert.status === "open" ? "badge-success" : "badge-danger"}`}
+                                >
+                                  {concert.status === "open"
+                                    ? "เปิดขาย"
+                                    : "ปิดขาย"}
+                                </span>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td
+                              colSpan="6"
+                              style={{
+                                textAlign: "center",
+                                padding: "40px",
+                                color: "#64748b",
+                              }}
+                            >
+                              ไม่พบข้อมูลคอนเสิร์ตที่ค้นหา 🕵️‍♂️
                             </td>
                           </tr>
-                        ))}
+                        )}
                       </tbody>
                     </table>
                   </div>
                 </div>
               </>
             ) : (
-              <div style={{ padding: "20px", textAlign: "center", background: "#f3f4f6", borderRadius: "8px" }}>
+              <div
+                style={{
+                  padding: "20px",
+                  textAlign: "center",
+                  background: "#f3f4f6",
+                  borderRadius: "8px",
+                }}
+              >
                 <p>กำลังโหลดข้อมูล...</p>
               </div>
             )}
@@ -386,7 +474,9 @@ function AdminDashboard() {
                     {editingConcert?.id === concert.id ? (
                       <EditConcertForm
                         concert={editingConcert}
-                        onSave={(updates) => handleUpdateConcert(concert.id, updates)}
+                        onSave={(updates) =>
+                          handleUpdateConcert(concert.id, updates)
+                        }
                         onCancel={() => setEditingConcert(null)}
                       />
                     ) : (
@@ -396,7 +486,9 @@ function AdminDashboard() {
                             <img
                               src={getImageUrl(concert.imageUrl)}
                               alt={concert.name}
-                              onError={(e) => { e.target.style.display = "none"; }}
+                              onError={(e) => {
+                                e.target.style.display = "none";
+                              }}
                             />
                           </div>
                         )}
@@ -404,10 +496,15 @@ function AdminDashboard() {
                           <div className="concert-info">
                             <h3>{concert.name}</h3>
                             <p className="concert-meta">
-                              รหัส: {concert.id} | บัตรทั้งหมด: {concert.totalTickets} | จองแล้ว: {concert.bookedTickets} | คงเหลือ: {concert.availableTickets}
+                              รหัส: {concert.id} | บัตรทั้งหมด:{" "}
+                              {concert.totalTickets} | จองแล้ว:{" "}
+                              {concert.bookedTickets} | คงเหลือ:{" "}
+                              {concert.availableTickets}
                             </p>
                           </div>
-                          <span className={`badge ${concert.status === "open" ? "badge-success" : "badge-danger"}`}>
+                          <span
+                            className={`badge ${concert.status === "open" ? "badge-success" : "badge-danger"}`}
+                          >
                             {concert.status === "open" ? "เปิดขาย" : "ปิดขาย"}
                           </span>
                         </div>
@@ -415,15 +512,26 @@ function AdminDashboard() {
                         <div className="concert-actions">
                           <button
                             className="btn btn-secondary"
-                            onClick={() => setEditingConcert({ ...concert, ...stats.concerts.find((c) => c.id === concert.id) })}
+                            onClick={() =>
+                              setEditingConcert({
+                                ...concert,
+                                ...stats.concerts.find(
+                                  (c) => c.id === concert.id,
+                                ),
+                              })
+                            }
                           >
                             แก้ไขข้อมูล
                           </button>
                           <button
                             className={`btn ${concert.status === "open" ? "btn-danger" : "btn-success"}`}
-                            onClick={() => handleToggleStatus(concert.id, concert.status)}
+                            onClick={() =>
+                              handleToggleStatus(concert.id, concert.status)
+                            }
                           >
-                            {concert.status === "open" ? "ปิดการขาย" : "เปิดการขาย"}
+                            {concert.status === "open"
+                              ? "ปิดการขาย"
+                              : "เปิดการขาย"}
                           </button>
                         </div>
                       </>
@@ -432,7 +540,14 @@ function AdminDashboard() {
                 ))}
               </>
             ) : (
-              <div style={{ padding: "20px", textAlign: "center", background: "#f3f4f6", borderRadius: "8px" }}>
+              <div
+                style={{
+                  padding: "20px",
+                  textAlign: "center",
+                  background: "#f3f4f6",
+                  borderRadius: "8px",
+                }}
+              >
                 <p>กำลังโหลดข้อมูล...</p>
               </div>
             )}
@@ -463,14 +578,22 @@ function AdminDashboard() {
                 <tbody>
                   {reservations.map((res) => (
                     <tr key={res.id}>
-                      <td><code>{res.id}</code></td>
+                      <td>
+                        <code>{res.id}</code>
+                      </td>
                       <td>{res.concertName}</td>
                       <td>{res.customerName}</td>
                       <td>{res.customerEmail}</td>
                       <td>{res.quantity}</td>
                       <td>฿{res.totalPrice.toLocaleString()}</td>
-                      <td>{new Date(res.reservedAt).toLocaleString("th-TH")}</td>
-                      <td><span className="badge badge-success">{res.status}</span></td>
+                      <td>
+                        {new Date(res.reservedAt).toLocaleString("th-TH")}
+                      </td>
+                      <td>
+                        <span className="badge badge-success">
+                          {res.status}
+                        </span>
+                      </td>
                       <td>
                         <button
                           className="btn btn-danger"
@@ -535,7 +658,10 @@ function EditConcertForm({ concert, onSave, onCancel }) {
     if (!formData.artist.trim()) return setError("ชื่อศิลปินไม่สามารถว่างได้");
     if (!formData.date) return setError("วันที่ไม่สามารถว่างได้");
     if (!formData.venue.trim()) return setError("สถานที่ไม่สามารถว่างได้");
-    if (formData.totalTickets < concert.bookedTickets) return setError(`ไม่สามารถลดบัตรน้อยกว่า ${concert.bookedTickets} ที่ขายไปแล้ว`);
+    if (formData.totalTickets < concert.bookedTickets)
+      return setError(
+        `ไม่สามารถลดบัตรน้อยกว่า ${concert.bookedTickets} ที่ขายไปแล้ว`,
+      );
     if (formData.price < 0) return setError("ราคาไม่สามารถติดลบได้");
 
     const updates = {};
@@ -543,62 +669,169 @@ function EditConcertForm({ concert, onSave, onCancel }) {
     if (formData.artist !== concert.artist) updates.artist = formData.artist;
     if (formData.date !== concert.date) updates.date = formData.date;
     if (formData.venue !== concert.venue) updates.venue = formData.venue;
-    if (formData.totalTickets !== concert.totalTickets) updates.totalTickets = formData.totalTickets;
+    if (formData.totalTickets !== concert.totalTickets)
+      updates.totalTickets = formData.totalTickets;
     if (formData.price !== concert.price) updates.price = formData.price;
-    if (formData.imageUrl !== concert.imageUrl) updates.imageUrl = formData.imageUrl;
+    if (formData.imageUrl !== concert.imageUrl)
+      updates.imageUrl = formData.imageUrl;
 
-    if (Object.keys(updates).length === 0) return setError("ไม่มีการเปลี่ยนแปลงข้อมูล");
+    if (Object.keys(updates).length === 0)
+      return setError("ไม่มีการเปลี่ยนแปลงข้อมูล");
 
     onSave(updates);
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      {error && <div className="alert alert-error" style={{ marginBottom: "16px" }}>{error}</div>}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
+      {error && (
+        <div className="alert alert-error" style={{ marginBottom: "16px" }}>
+          {error}
+        </div>
+      )}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "16px",
+          marginBottom: "16px",
+        }}
+      >
         <div className="input-group">
           <label>ชื่อคอนเสิร์ต</label>
-          <input type="text" value={formData.name} onChange={(e) => { setFormData({ ...formData, name: e.target.value }); setError(""); }} required />
+          <input
+            type="text"
+            value={formData.name}
+            onChange={(e) => {
+              setFormData({ ...formData, name: e.target.value });
+              setError("");
+            }}
+            required
+          />
         </div>
         <div className="input-group">
           <label>ชื่อศิลปิน</label>
-          <input type="text" value={formData.artist} onChange={(e) => { setFormData({ ...formData, artist: e.target.value }); setError(""); }} required />
+          <input
+            type="text"
+            value={formData.artist}
+            onChange={(e) => {
+              setFormData({ ...formData, artist: e.target.value });
+              setError("");
+            }}
+            required
+          />
         </div>
         <div className="input-group">
           <label>วันที่จัดงาน</label>
-          <input type="date" value={formData.date} onChange={(e) => { setFormData({ ...formData, date: e.target.value }); setError(""); }} required />
+          <input
+            type="date"
+            value={formData.date}
+            onChange={(e) => {
+              setFormData({ ...formData, date: e.target.value });
+              setError("");
+            }}
+            required
+          />
         </div>
         <div className="input-group">
           <label>สถานที่</label>
-          <input type="text" value={formData.venue} onChange={(e) => { setFormData({ ...formData, venue: e.target.value }); setError(""); }} required />
+          <input
+            type="text"
+            value={formData.venue}
+            onChange={(e) => {
+              setFormData({ ...formData, venue: e.target.value });
+              setError("");
+            }}
+            required
+          />
         </div>
         <div className="input-group">
           <label>จำนวนบัตรทั้งหมด</label>
-          <input type="number" value={formData.totalTickets || ""} onChange={(e) => { setFormData({ ...formData, totalTickets: e.target.value ? parseInt(e.target.value) : 0 }); setError(""); }} min={concert.bookedTickets} />
-          <small style={{ color: "#6b7280" }}>จองแล้ว: {concert.bookedTickets} (ต้องไม่น้อยกว่านี้)</small>
+          <input
+            type="number"
+            value={formData.totalTickets || ""}
+            onChange={(e) => {
+              setFormData({
+                ...formData,
+                totalTickets: e.target.value ? parseInt(e.target.value) : 0,
+              });
+              setError("");
+            }}
+            min={concert.bookedTickets}
+          />
+          <small style={{ color: "#6b7280" }}>
+            จองแล้ว: {concert.bookedTickets} (ต้องไม่น้อยกว่านี้)
+          </small>
         </div>
         <div className="input-group">
           <label>ราคาต่อใบ (บาท)</label>
-          <input type="number" value={formData.price || ""} onChange={(e) => { setFormData({ ...formData, price: e.target.value ? parseInt(e.target.value) : 0 }); setError(""); }} min={0} />
+          <input
+            type="number"
+            value={formData.price || ""}
+            onChange={(e) => {
+              setFormData({
+                ...formData,
+                price: e.target.value ? parseInt(e.target.value) : 0,
+              });
+              setError("");
+            }}
+            min={0}
+          />
         </div>
         <div className="input-group" style={{ gridColumn: "1 / -1" }}>
           <label>📤 อัพโหลดรูปภาพ</label>
-          <input type="file" accept="image/*" onChange={handleFileUpload} disabled={uploading} style={{ padding: "8px", border: "1px solid #d1d5db", borderRadius: "4px", cursor: uploading ? "not-allowed" : "pointer" }} />
-          {uploading && <small style={{ color: "#3b82f6" }}>⏳ กำลังอัพโหลด...</small>}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileUpload}
+            disabled={uploading}
+            style={{
+              padding: "8px",
+              border: "1px solid #d1d5db",
+              borderRadius: "4px",
+              cursor: uploading ? "not-allowed" : "pointer",
+            }}
+          />
+          {uploading && (
+            <small style={{ color: "#3b82f6" }}>⏳ กำลังอัพโหลด...</small>
+          )}
         </div>
         <div className="input-group" style={{ gridColumn: "1 / -1" }}>
           <label>หรือ ใส่ URL รูปภาพ</label>
-          <input type="text" value={formData.imageUrl} onChange={(e) => { setFormData({ ...formData, imageUrl: e.target.value }); setError(""); }} placeholder="https://example.com/concert-image.jpg" />
+          <input
+            type="text"
+            value={formData.imageUrl}
+            onChange={(e) => {
+              setFormData({ ...formData, imageUrl: e.target.value });
+              setError("");
+            }}
+            placeholder="https://example.com/concert-image.jpg"
+          />
         </div>
         {formData.imageUrl && (
           <div style={{ gridColumn: "1 / -1", marginTop: "-8px" }}>
-            <img src={formData.imageUrl} alt="Preview" style={{ maxWidth: "100%", maxHeight: "200px", borderRadius: "4px", objectFit: "cover" }} onError={(e) => { e.target.style.display = "none"; }} />
+            <img
+              src={formData.imageUrl}
+              alt="Preview"
+              style={{
+                maxWidth: "100%",
+                maxHeight: "200px",
+                borderRadius: "4px",
+                objectFit: "cover",
+              }}
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
+            />
           </div>
         )}
       </div>
       <div style={{ display: "flex", gap: "12px" }}>
-        <button type="submit" className="btn btn-success">บันทึกการเปลี่ยนแปลง</button>
-        <button type="button" className="btn btn-secondary" onClick={onCancel}>ยกเลิก</button>
+        <button type="submit" className="btn btn-success">
+          บันทึกการเปลี่ยนแปลง
+        </button>
+        <button type="button" className="btn btn-secondary" onClick={onCancel}>
+          ยกเลิก
+        </button>
       </div>
     </form>
   );
@@ -659,52 +892,163 @@ function CreateConcertForm({ onSave, onCancel }) {
 
   return (
     <form onSubmit={handleSubmit}>
-      {error && <div className="alert alert-error" style={{ marginBottom: "16px" }}>{error}</div>}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
+      {error && (
+        <div className="alert alert-error" style={{ marginBottom: "16px" }}>
+          {error}
+        </div>
+      )}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "16px",
+          marginBottom: "16px",
+        }}
+      >
         <div className="input-group">
           <label>ชื่อคอนเสิร์ต *</label>
-          <input type="text" value={formData.name} onChange={(e) => { setFormData({ ...formData, name: e.target.value }); setError(""); }} placeholder="เช่น ลำปางเทศกาลฟิสเทกระ 2026" required />
+          <input
+            type="text"
+            value={formData.name}
+            onChange={(e) => {
+              setFormData({ ...formData, name: e.target.value });
+              setError("");
+            }}
+            placeholder="เช่น ลำปางเทศกาลฟิสเทกระ 2026"
+            required
+          />
         </div>
         <div className="input-group">
           <label>ชื่อศิลปิน *</label>
-          <input type="text" value={formData.artist} onChange={(e) => { setFormData({ ...formData, artist: e.target.value }); setError(""); }} placeholder="เช่น The Beatles" required />
+          <input
+            type="text"
+            value={formData.artist}
+            onChange={(e) => {
+              setFormData({ ...formData, artist: e.target.value });
+              setError("");
+            }}
+            placeholder="เช่น The Beatles"
+            required
+          />
         </div>
         <div className="input-group">
           <label>วันที่จัดงาน *</label>
-          <input type="date" value={formData.date} onChange={(e) => { setFormData({ ...formData, date: e.target.value }); setError(""); }} required />
+          <input
+            type="date"
+            value={formData.date}
+            onChange={(e) => {
+              setFormData({ ...formData, date: e.target.value });
+              setError("");
+            }}
+            required
+          />
         </div>
         <div className="input-group">
           <label>สถานที่ *</label>
-          <input type="text" value={formData.venue} onChange={(e) => { setFormData({ ...formData, venue: e.target.value }); setError(""); }} placeholder="เช่น ราชมังคลากีฬาสถาน" required />
+          <input
+            type="text"
+            value={formData.venue}
+            onChange={(e) => {
+              setFormData({ ...formData, venue: e.target.value });
+              setError("");
+            }}
+            placeholder="เช่น ราชมังคลากีฬาสถาน"
+            required
+          />
         </div>
         <div className="input-group">
           <label>จำนวนบัตรทั้งหมด *</label>
-          <input type="number" value={formData.totalTickets || ""} onChange={(e) => { setFormData({ ...formData, totalTickets: e.target.value ? parseInt(e.target.value) : 0 }); setError(""); }} min={1} required />
+          <input
+            type="number"
+            value={formData.totalTickets || ""}
+            onChange={(e) => {
+              setFormData({
+                ...formData,
+                totalTickets: e.target.value ? parseInt(e.target.value) : 0,
+              });
+              setError("");
+            }}
+            min={1}
+            required
+          />
         </div>
         <div className="input-group">
           <label>ราคาต่อใบ (บาท) *</label>
-          <input type="number" value={formData.price || ""} onChange={(e) => { setFormData({ ...formData, price: e.target.value ? parseInt(e.target.value) : 0 }); setError(""); }} min={0} step={100} required />
+          <input
+            type="number"
+            value={formData.price || ""}
+            onChange={(e) => {
+              setFormData({
+                ...formData,
+                price: e.target.value ? parseInt(e.target.value) : 0,
+              });
+              setError("");
+            }}
+            min={0}
+            step={100}
+            required
+          />
         </div>
         <div className="input-group" style={{ gridColumn: "1 / -1" }}>
           <label>📤 อัพโหลดรูปภาพ *</label>
-          <input type="file" accept="image/*" onChange={handleFileUpload} disabled={uploading} style={{ padding: "8px", border: "1px solid #d1d5db", borderRadius: "4px", cursor: uploading ? "not-allowed" : "pointer" }} required={!formData.imageUrl} />
-          {uploading && <small style={{ color: "#3b82f6" }}>⏳ กำลังอัพโหลด...</small>}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileUpload}
+            disabled={uploading}
+            style={{
+              padding: "8px",
+              border: "1px solid #d1d5db",
+              borderRadius: "4px",
+              cursor: uploading ? "not-allowed" : "pointer",
+            }}
+            required={!formData.imageUrl}
+          />
+          {uploading && (
+            <small style={{ color: "#3b82f6" }}>⏳ กำลังอัพโหลด...</small>
+          )}
         </div>
         <div className="input-group" style={{ gridColumn: "1 / -1" }}>
           <label>หรือ ใส่ URL รูปภาพ</label>
-          <input type="text" value={formData.imageUrl} onChange={(e) => { setFormData({ ...formData, imageUrl: e.target.value }); setError(""); }} placeholder="https://example.com/concert-image.jpg" />
+          <input
+            type="text"
+            value={formData.imageUrl}
+            onChange={(e) => {
+              setFormData({ ...formData, imageUrl: e.target.value });
+              setError("");
+            }}
+            placeholder="https://example.com/concert-image.jpg"
+          />
         </div>
         {formData.imageUrl && (
           <div style={{ gridColumn: "1 / -1", marginTop: "-8px" }}>
-            <img src={formData.imageUrl} alt="Preview" style={{ maxWidth: "100%", maxHeight: "200px", borderRadius: "4px", objectFit: "cover" }} onError={(e) => { e.target.style.display = "none"; }} />
+            <img
+              src={formData.imageUrl}
+              alt="Preview"
+              style={{
+                maxWidth: "100%",
+                maxHeight: "200px",
+                borderRadius: "4px",
+                objectFit: "cover",
+              }}
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
+            />
           </div>
         )}
       </div>
       <div style={{ display: "flex", gap: "12px" }}>
-        <button type="submit" className="btn btn-success" disabled={loading || uploading}>
+        <button
+          type="submit"
+          className="btn btn-success"
+          disabled={loading || uploading}
+        >
           {loading ? "⏳ กำลังสร้าง..." : "✅ สร้างคอนเสิร์ต"}
         </button>
-        <button type="button" className="btn btn-secondary" onClick={onCancel}>ยกเลิก</button>
+        <button type="button" className="btn btn-secondary" onClick={onCancel}>
+          ยกเลิก
+        </button>
       </div>
     </form>
   );
