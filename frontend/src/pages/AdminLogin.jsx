@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import axios from 'axios'
-import { FaLock, FaUser } from 'react-icons/fa'
 import './AdminLogin.css'
 
 function AdminLogin() {
@@ -42,87 +41,60 @@ function AdminLogin() {
 
   return (
     <div className="admin-login-page">
-      <div className="admin-login-container">
-        {/* Left side - Branding */}
-        <div className="admin-login-brand">
-          <div className="brand-icon">🔐</div>
-          <h1>Admin Portal</h1>
-          <p>Concert Ticket Management System</p>
-          <div className="brand-features">
-            <div className="feature">✓ Secure Access</div>
-            <div className="feature">✓ Role-Based Control</div>
-            <div className="feature">✓ Real-time Analytics</div>
-          </div>
+      <div className="admin-login-card">
+        <div className="login-header">
+          <h1>Admin Login</h1>
+          <p>Concert Ticket Management</p>
         </div>
 
-        {/* Right side - Login Form */}
-        <div className="admin-login-form-container">
-          <div className="form-header">
-            <h2>Admin Login</h2>
-            <p>Please login with your admin credentials</p>
+        {error && (
+          <div className="alert alert-error">
+            {error}
           </div>
+        )}
 
-          {error && (
-            <div className="alert alert-error">
-              <strong>⚠️ Error:</strong> {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="admin-login-form">
-            <div className="form-group">
-              <label htmlFor="username">
-                <FaUser /> Username
-              </label>
-              <input
-                id="username"
-                type="text"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                placeholder="Enter admin username"
-                required
-                disabled={loading}
-                autoComplete="username"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="password">
-                <FaLock /> Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Enter admin password"
-                required
-                disabled={loading}
-                autoComplete="current-password"
-              />
-            </div>
-
-            <button 
-              type="submit" 
-              className="btn-login-submit"
+        <form onSubmit={handleSubmit} className="admin-login-form">
+          <div className="form-group">
+            <label htmlFor="username">Username</label>
+            <input
+              id="username"
+              type="text"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              placeholder="admin"
+              required
               disabled={loading}
-            >
-              {loading ? '🔄 Logging in...' : '🔓 Login'}
-            </button>
-          </form>
-
-          <div className="form-notes">
-            <div className="note-section">
-              <h4>🚀 Demo Credentials:</h4>
-              <p><strong>Username:</strong> admin</p>
-              <p><strong>Password:</strong> admin123</p>
-            </div>
-            <div className="note-section">
-              <h4>📝 Security Note:</h4>
-              <p>Only administrators with valid credentials can access this panel. User accounts created through Google login have limited access.</p>
-            </div>
+              autoComplete="username"
+            />
           </div>
+
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="••••••••"
+              required
+              disabled={loading}
+              autoComplete="current-password"
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            className="btn-login-submit"
+            disabled={loading}
+          >
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
+
+        <div className="login-footer">
+          <p><strong>Demo:</strong> admin / admin123</p>
         </div>
       </div>
     </div>

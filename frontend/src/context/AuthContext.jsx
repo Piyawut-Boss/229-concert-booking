@@ -58,12 +58,17 @@ export function AuthProvider({ children }) {
   const logout = () => {
     setUser(null)
     localStorage.removeItem('user')
+    // Also ensure admin data is cleared when user logs out
+    setAdmin(null)
+    localStorage.removeItem('adminUser')
+    localStorage.removeItem('adminToken')
   }
 
   const logoutAdmin = () => {
     setAdmin(null)
     localStorage.removeItem('adminUser')
     localStorage.removeItem('adminToken')
+    // Keep user login if they're also logged in as user
   }
 
   return (

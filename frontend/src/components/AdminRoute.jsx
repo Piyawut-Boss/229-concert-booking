@@ -32,8 +32,11 @@ function AdminRoute({ children }) {
     )
   }
 
-  // If admin is logged in, show the dashboard
-  if (admin) {
+  // Check both admin state AND adminToken in localStorage for security
+  const adminToken = localStorage.getItem('adminToken')
+  
+  // If admin is logged in AND has valid token, show the dashboard
+  if (admin && adminToken) {
     return children
   }
 

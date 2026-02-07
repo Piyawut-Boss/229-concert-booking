@@ -16,7 +16,9 @@ function AdminDashboard() {
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken')
+    // Security check: verify admin is logged in before showing dashboard
     if (!token || !admin) {
+      logoutAdmin() // Clear any stale admin data
       navigate('/admin')
       return
     }
@@ -24,7 +26,7 @@ function AdminDashboard() {
     fetchData()
     const interval = setInterval(fetchData, 5000)
     return () => clearInterval(interval)
-  }, [navigate, admin])
+  }, [navigate, admin, logoutAdmin])
 
   const fetchData = async () => {
     try {
