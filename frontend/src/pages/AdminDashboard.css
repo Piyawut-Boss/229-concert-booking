@@ -194,3 +194,89 @@
   display: flex;
   gap: 12px;
 }
+
+/* Modern Table Styles */
+.table-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #f1f5f9;
+}
+
+.modern-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 800px;
+}
+
+.modern-table thead th {
+  background: #f8fafc;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 16px 24px;
+  text-align: left;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.modern-table tbody tr {
+  transition: all 0.2s;
+}
+
+.modern-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.modern-table td {
+  padding: 16px 24px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  color: #334155;
+  font-size: 14px;
+}
+
+.modern-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Table Specific Components */
+.concert-cell {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.concert-thumb {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  object-fit: cover;
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+}
+
+.concert-info-mini {
+  display: flex;
+  flex-direction: column;
+}
+
+.concert-name {
+  font-weight: 600;
+  color: #1e293b; /* แก้เป็นสีเข้มให้มองเห็นชัดเจน */
+  margin-bottom: 2px;
+  font-size: 15px;
+}
+
+.concert-artist {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.revenue-text {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 15px;
+}
