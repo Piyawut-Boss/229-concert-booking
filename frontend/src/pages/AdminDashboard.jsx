@@ -481,6 +481,7 @@ function AdminDashboard() {
                       />
                     ) : (
                       <>
+                        {/* 1. รูปปกคอนเสิร์ต (จะอยู่ซ้ายสุด) */}
                         {concert.imageUrl && (
                           <div className="concert-image-container">
                             <img
@@ -492,47 +493,51 @@ function AdminDashboard() {
                             />
                           </div>
                         )}
-                        <div className="concert-details">
-                          <div className="concert-info">
-                            <h3>{concert.name}</h3>
-                            <p className="concert-meta">
-                              รหัส: {concert.id} | บัตรทั้งหมด:{" "}
-                              {concert.totalTickets} | จองแล้ว:{" "}
-                              {concert.bookedTickets} | คงเหลือ:{" "}
-                              {concert.availableTickets}
-                            </p>
-                          </div>
-                          <span
-                            className={`badge ${concert.status === "open" ? "badge-success" : "badge-danger"}`}
-                          >
-                            {concert.status === "open" ? "เปิดขาย" : "ปิดขาย"}
-                          </span>
-                        </div>
 
-                        <div className="concert-actions">
-                          <button
-                            className="btn btn-secondary"
-                            onClick={() =>
-                              setEditingConcert({
-                                ...concert,
-                                ...stats.concerts.find(
-                                  (c) => c.id === concert.id,
-                                ),
-                              })
-                            }
-                          >
-                            แก้ไขข้อมูล
-                          </button>
-                          <button
-                            className={`btn ${concert.status === "open" ? "btn-danger" : "btn-success"}`}
-                            onClick={() =>
-                              handleToggleStatus(concert.id, concert.status)
-                            }
-                          >
-                            {concert.status === "open"
-                              ? "ปิดการขาย"
-                              : "เปิดการขาย"}
-                          </button>
+                        {/* 2. ส่วนรายละเอียดและปุ่มจัดการ (จะอยู่ขวา) */}
+                        <div className="concert-item-right">
+                          <div className="concert-details">
+                            <div className="concert-info">
+                              <h3>{concert.name}</h3>
+                              <p className="concert-meta">
+                                รหัส: {concert.id} | บัตรทั้งหมด:{" "}
+                                {concert.totalTickets} | จองแล้ว:{" "}
+                                {concert.bookedTickets} | คงเหลือ:{" "}
+                                {concert.availableTickets}
+                              </p>
+                            </div>
+                            <span
+                              className={`badge ${concert.status === "open" ? "badge-success" : "badge-danger"}`}
+                            >
+                              {concert.status === "open" ? "เปิดขาย" : "ปิดขาย"}
+                            </span>
+                          </div>
+
+                          <div className="concert-actions">
+                            <button
+                              className="btn btn-secondary"
+                              onClick={() =>
+                                setEditingConcert({
+                                  ...concert,
+                                  ...stats.concerts.find(
+                                    (c) => c.id === concert.id,
+                                  ),
+                                })
+                              }
+                            >
+                              แก้ไขข้อมูล
+                            </button>
+                            <button
+                              className={`btn ${concert.status === "open" ? "btn-danger" : "btn-success"}`}
+                              onClick={() =>
+                                handleToggleStatus(concert.id, concert.status)
+                              }
+                            >
+                              {concert.status === "open"
+                                ? "ปิดการขาย"
+                                : "เปิดการขาย"}
+                            </button>
+                          </div>
                         </div>
                       </>
                     )}
@@ -540,16 +545,7 @@ function AdminDashboard() {
                 ))}
               </>
             ) : (
-              <div
-                style={{
-                  padding: "20px",
-                  textAlign: "center",
-                  background: "#f3f4f6",
-                  borderRadius: "8px",
-                }}
-              >
-                <p>กำลังโหลดข้อมูล...</p>
-              </div>
+              <div className="loading-state">กำลังโหลดข้อมูล...</div>
             )}
           </div>
         )}

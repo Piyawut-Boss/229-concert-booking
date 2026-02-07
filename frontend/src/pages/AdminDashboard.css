@@ -169,34 +169,52 @@
     background: white;
     border: 1px solid #e5e7eb;
     border-radius: 12px;
-    padding: 24px;
+    padding: 20px;
     margin-bottom: 20px;
+    display: flex;
+    gap: 64px;
+    align-items: flex-start;
     transition: box-shadow 0.2s;
     color: #1f2937;
+}
+
+.admin-dashboard-page .concert-item-right {
+    flex-grow: 1; 
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-self: stretch;
 }
 
 .admin-dashboard-page .concert-item:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
+.admin-dashboard-page .concert-image-container {
+    flex-shrink: 0;
+    width: 160px;
+}
+
 .admin-dashboard-page .concert-image-container img {
-    width: 100%;
-    max-height: 250px;
+    width: 200px;
+    height: 250px;
     object-fit: cover;
     border-radius: 8px;
-    margin-bottom: 16px;
+    margin-bottom: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .admin-dashboard-page .concert-details {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 .admin-dashboard-page .concert-info h3 {
     margin: 0 0 8px 0;
-    color: #1f2937;
+    font-size: 20px;
+    color: #111827;
 }
 
 .admin-dashboard-page .concert-meta {
@@ -207,6 +225,7 @@
 .admin-dashboard-page .concert-actions {
     display: flex;
     gap: 12px;
+    margin-top: auto;
 }
 
 /* Modern Table Styles */
@@ -215,7 +234,6 @@
     border-radius: 12px;
     border: 1px solid #f1f5f9;
     background: white;
-    /* ใส่พื้นหลังขาวให้ตาราง */
 }
 
 .admin-dashboard-page .modern-table {
@@ -240,7 +258,6 @@
 .admin-dashboard-page .modern-table tbody tr {
     transition: all 0.2s;
     background-color: white;
-    /* บังคับพื้นหลังขาว */
 }
 
 .admin-dashboard-page .modern-table tbody tr:hover {
@@ -252,7 +269,6 @@
     border-bottom: 1px solid #f1f5f9;
     vertical-align: middle;
     color: #334155;
-    /* สีตัวอักษรทั่วไปในตาราง */
     font-size: 14px;
 }
 
@@ -303,7 +319,6 @@
 
 .admin-dashboard-page .concert-artist {
     font-size: 14px;
-    /* ขยายให้อ่านง่ายขึ้น */
     color: #64748b;
     font-weight: 500;
     display: flex;
@@ -318,7 +333,6 @@
     font-size: 15px;
 }
 
-/* Input Styles (เผื่อโดน Global CSS กวน) */
 .admin-dashboard-page input[type="text"],
 .admin-dashboard-page input[type="number"],
 .admin-dashboard-page input[type="date"] {
@@ -364,7 +378,6 @@
 .admin-dashboard-page .search-input {
     width: 100%;
     padding: 10px 16px 10px 36px !important;
-    /* เว้นซ้ายไว้ใส่ไอคอน */
     border: 1px solid #e2e8f0;
     border-radius: 8px;
     font-size: 14px;
@@ -389,7 +402,6 @@
     font-size: 14px;
     cursor: pointer;
     height: 42px;
-    /* ให้สูงเท่า input */
     transition: all 0.2s;
 }
 
@@ -412,5 +424,61 @@
 
     .admin-dashboard-page .search-wrapper {
         min-width: 100%;
+    }
+}
+
+/* --- การปรับแต่งให้รองรับ Responsive (Mobile) --- */
+
+@media (max-width: 768px) {
+    /* 1. ปรับ Card ให้วางตัวแนวตั้ง */
+    .admin-dashboard-page .concert-item {
+        flex-direction: column; 
+        gap: 16px;
+        padding: 16px;
+    }
+
+    /* 2. ปรับขนาดรูปให้เต็มความกว้าง */
+    .admin-dashboard-page .concert-image-container {
+        width: 100%; /* รูปเต็มความกว้างหน้าจอ */
+    }
+
+    .admin-dashboard-page .concert-image-container img {
+        height: 250px; /* เพิ่มความสูงรูปให้ดูชัดขึ้นในมือถือ */
+    }
+
+    /* 3. จัดการส่วนข้อมูลฝั่งขวา (ซึ่งตอนนี้อยู่ข้างล่างรูป) */
+    .admin-dashboard-page .concert-item-right {
+        width: 100%;
+    }
+
+    /* 4. ปรับรายละเอียดให้ Badge ไม่เบียดกับชื่อ */
+    .admin-dashboard-page .concert-details {
+        flex-direction: column; /* ชื่ออยู่บน Badge อยู่น่าง */
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    /* 5. ปรับปุ่มให้เต็มความกว้างเพื่อให้กดง่ายขึ้น */
+    .admin-dashboard-page .concert-actions {
+        flex-direction: column; /* ปุ่มวางซ้อนกัน */
+        width: 100%;
+        margin-top: 16px;
+    }
+
+    .admin-dashboard-page .concert-actions .btn {
+        width: 100%; /* ปุ่มกว้างเต็ม */
+        justify-content: center;
+        padding: 12px; /* ขยายขนาดปุ่มให้กดง่าย */
+    }
+}
+
+/* ปรับแต่งเพิ่มเติมสำหรับหน้าจอขนาดเล็กมาก (เช่น iPhone SE) */
+@media (max-width: 480px) {
+    .admin-dashboard-page .concert-info h3 {
+        font-size: 18px;
+    }
+    
+    .admin-dashboard-page .concert-meta {
+        font-size: 13px;
     }
 }
