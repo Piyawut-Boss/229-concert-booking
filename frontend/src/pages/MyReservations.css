@@ -1,54 +1,23 @@
-/* ============================================
-   RESERVATIONS PAGE - PROFESSIONAL UI
-   ============================================ */
+/* RESERVATIONS PAGE - BEAUTIFUL & MINIMAL PROFESSIONAL */
 
 /* Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -1000px 0;
-  }
-  100% {
-    background-position: 1000px 0;
-  }
-}
-
-@keyframes cardHoverGlow {
-  from {
-    box-shadow: 0 10px 30px rgba(99, 102, 241, 0);
-  }
-  to {
-    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.25);
   }
 }
 
@@ -56,63 +25,61 @@
 .reservations-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 24px 16px;
-  animation: fadeIn 0.6s ease-out;
+  padding: 40px 16px;
+  animation: fadeIn 0.5s ease-out;
 }
 
 .reservations-container {
-  max-width: 1000px;
+  max-width: 920px;
   margin: 0 auto;
 }
 
 /* Header Section */
 .reservations-header {
-  text-align: center;
-  margin-bottom: 28px;
-  animation: slideUp 0.6s ease-out;
+  margin-bottom: 36px;
   color: white;
+  animation: slideUp 0.5s ease-out;
 }
 
 .reservations-header h1 {
   font-size: 36px;
-  font-weight: 800;
+  font-weight: 700;
   margin-bottom: 8px;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 12px;
   letter-spacing: -0.5px;
 }
 
 .reservations-header h1 svg {
   font-size: 32px;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .reservations-header p {
   font-size: 14px;
   opacity: 0.95;
-  font-weight: 300;
-  letter-spacing: 0.5px;
+  font-weight: 400;
+  letter-spacing: 0.3px;
 }
 
 /* User Profile Card */
 .user-profile-card {
   background: white;
-  border-radius: 14px;
-  padding: 20px;
-  margin-bottom: 28px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-  animation: slideUp 0.6s ease-out 0.1s both;
+  border-radius: 12px;
+  padding: 28px;
+  margin-bottom: 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  animation: slideUp 0.5s ease-out 0.1s both;
+  border: 1px solid rgba(102, 126, 234, 0.08);
 }
 
 .profile-header {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 18px;
-  padding-bottom: 18px;
-  border-bottom: 2px solid #f3f4f6;
+  gap: 18px;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 2px solid #f0f4ff;
 }
 
 .profile-avatar {
@@ -124,57 +91,60 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 700;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
   flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
 }
 
 .profile-info h3 {
   font-size: 18px;
   font-weight: 700;
   color: #1f2937;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
+  letter-spacing: -0.3px;
 }
 
 .profile-info p {
   font-size: 13px;
   color: #6b7280;
+  font-weight: 500;
 }
 
 .profile-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 20px;
 }
 
 .stat {
-  background: linear-gradient(135deg, #f0f4ff 0%, #f9f7ff 100%);
-  padding: 12px 14px;
-  border-radius: 10px;
+  padding: 16px 0;
   text-align: center;
-  border-left: 3px solid #667eea;
+  border-right: 1px solid #e5e7eb;
   transition: all 0.3s ease;
+}
+
+.stat:last-child {
+  border-right: none;
 }
 
 .stat:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
 }
 
 .stat-label {
   display: block;
   font-size: 11px;
-  font-weight: 600;
-  color: #6b7280;
+  font-weight: 700;
+  color: #9ca3af;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
+  letter-spacing: 0.6px;
+  margin-bottom: 6px;
 }
 
 .stat-value {
   display: block;
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 800;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
@@ -188,7 +158,7 @@
   justify-content: center;
   align-items: center;
   min-height: 300px;
-  animation: slideUp 0.6s ease-out;
+  animation: slideUp 0.5s ease-out;
 }
 
 .loading-spinner {
@@ -198,11 +168,11 @@
 .loading-spinner .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
+  border: 3px solid rgba(255, 255, 255, 0.2);
   border-top: 3px solid white;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
-  margin: 0 auto 12px;
+  margin: 0 auto 14px;
 }
 
 @keyframes spin {
@@ -220,74 +190,66 @@
 /* Empty State */
 .empty-state {
   background: white;
-  border-radius: 14px;
-  padding: 40px 24px;
+  border-radius: 12px;
+  padding: 56px 32px;
   text-align: center;
-  animation: slideUp 0.6s ease-out;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  animation: slideUp 0.5s ease-out;
+  border: 1px solid rgba(102, 126, 234, 0.08);
 }
 
 .empty-state.not-logged-in {
-  background: linear-gradient(135deg, white 0%, #f9f7ff 100%);
+  background: white;
 }
 
 .empty-icon {
-  font-size: 60px;
-  margin-bottom: 16px;
+  font-size: 64px;
+  margin-bottom: 20px;
   display: inline-block;
-  animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-12px);
-  }
 }
 
 .empty-state h3 {
   font-size: 22px;
   font-weight: 700;
   color: #1f2937;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  letter-spacing: -0.3px;
 }
 
 .empty-state p {
   font-size: 14px;
   color: #6b7280;
-  max-width: 350px;
+  max-width: 320px;
   margin: 0 auto;
+  line-height: 1.6;
 }
 
 /* Filter Buttons */
 .filter-buttons {
   display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
+  gap: 10px;
+  margin-bottom: 24px;
   flex-wrap: wrap;
-  animation: slideUp 0.6s ease-out 0.15s both;
+  animation: slideUp 0.5s ease-out 0.15s both;
 }
 
 .filter-btn {
-  padding: 8px 16px;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.1);
+  padding: 9px 18px;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  background: transparent;
   color: white;
-  border-radius: 20px;
+  border-radius: 7px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
+  transition: all 0.25s ease;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .filter-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.6);
+  border-color: white;
+  background: rgba(255, 255, 255, 0.12);
   transform: translateY(-1px);
 }
 
@@ -301,9 +263,9 @@
 /* Reservations Grid */
 .reservations-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 16px;
-  animation: slideUp 0.6s ease-out 0.1s both;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 20px;
+  animation: slideUp 0.5s ease-out 0.1s both;
 }
 
 /* Reservation Card */
@@ -311,106 +273,105 @@
   background: white;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: slideUp 0.6s ease-out;
+  border: 1px solid rgba(102, 126, 234, 0.08);
 }
 
 .reservation-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 12px 28px rgba(102, 126, 234, 0.18);
+  border-color: rgba(102, 126, 234, 0.2);
 }
 
 /* Card Header */
 .card-header {
-  padding: 14px;
+  padding: 18px 20px;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 10px;
+  gap: 12px;
+  border-bottom: 1px solid #f3f4f6;
+  flex-wrap: no-wrap;
+  overflow: visible;
 }
 
 .card-title-section {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   flex: 1;
-  align-items: center;
+  align-items: flex-start;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .concert-icon {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 10px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 14px;
+  font-size: 16px;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.25);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
 }
 
 .card-title-section h3 {
   font-size: 15px;
   font-weight: 700;
   color: #1f2937;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
+  letter-spacing: -0.2px;
 }
 
 .reservation-id {
   font-size: 10px;
-  color: #999;
+  color: #9ca3af;
   font-weight: 600;
+  letter-spacing: 0.3px;
 }
 
 /* Status Badge */
 .status-badge {
-  padding: 5px 10px;
-  border-radius: 16px;
-  font-size: 9px;
+  padding: 5px 12px;
+  border-radius: 5px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.4px;
   white-space: nowrap;
   display: inline-block;
-  animation: slideUp 0.6s ease-out;
+  flex-shrink: 0;
 }
 
 .status-confirmed {
   background: #d1fae5;
   color: #065f46;
-  border: 1px solid #a7f3d0;
 }
 
 .status-pending {
   background: #fef3c7;
   color: #92400e;
-  border: 1px solid #fde68a;
 }
 
 .status-cancelled {
   background: #fee2e2;
   color: #7f1d1d;
-  border: 1px solid #fecaca;
-}
-
-/* Card Divider */
-.card-divider {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #e5e7eb, transparent);
 }
 
 /* Card Details */
 .card-details {
-  padding: 14px;
+  padding: 18px 20px;
 }
 
 .detail-row {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin-bottom: 10px;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
 }
 
 .detail-row:last-child {
@@ -419,58 +380,59 @@
 
 .detail-item {
   display: flex;
-  gap: 7px;
+  gap: 10px;
   align-items: flex-start;
 }
 
 .detail-icon {
   width: 28px;
   height: 28px;
-  background: #f3f4f6;
+  background: #f0f4ff;
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #667eea;
-  font-size: 11px;
+  font-size: 12px;
   flex-shrink: 0;
 }
 
 .detail-label {
   font-size: 10px;
-  color: #999;
+  color: #9ca3af;
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  font-weight: 600;
-  margin-bottom: 2px;
+  font-weight: 700;
+  margin-bottom: 3px;
 }
 
 .detail-value {
-  font-size: 12px;
+  font-size: 13px;
   color: #1f2937;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: -0.1px;
 }
 
 /* Card Footer */
 .card-footer {
-  background: linear-gradient(135deg, #f0f4ff 0%, #f9f7ff 100%);
-  padding: 11px 14px;
+  background: #f8fafb;
+  padding: 14px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #f0f4ff;
 }
 
 .total-label {
   font-size: 10px;
-  color: #6b7280;
+  color: #9ca3af;
   text-transform: uppercase;
   letter-spacing: 0.4px;
   font-weight: 700;
 }
 
 .total-price {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 800;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
@@ -481,24 +443,30 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .reservations-page {
-    padding: 16px 12px;
+    padding: 28px 12px;
   }
 
   .reservations-header h1 {
     font-size: 28px;
   }
 
-  .reservations-header p {
-    font-size: 13px;
-  }
-
   .user-profile-card {
-    padding: 16px;
+    padding: 20px;
   }
 
   .profile-stats {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 12px;
+  }
+
+  .stat {
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 12px 0;
+  }
+
+  .stat:last-child {
+    border-bottom: none;
   }
 
   .reservations-grid {
@@ -508,40 +476,36 @@
   .detail-row {
     grid-template-columns: 1fr;
   }
-
-  .card-header {
-    flex-direction: column;
-  }
-
-  .stat-value {
-    font-size: 18px;
-  }
 }
 
 @media (max-width: 640px) {
-  .reservations-header h1 {
-    font-size: 22px;
-    gap: 6px;
+  .reservations-page {
+    padding: 20px 12px;
   }
 
-  .reservations-header h1 svg {
-    font-size: 20px;
+  .reservations-header h1 {
+    font-size: 24px;
+  }
+
+  .reservations-header p {
+    font-size: 13px;
   }
 
   .user-profile-card {
-    padding: 12px;
+    padding: 18px;
+    margin-bottom: 24px;
   }
 
   .profile-header {
-    gap: 10px;
-    margin-bottom: 12px;
-    padding-bottom: 12px;
+    gap: 14px;
+    margin-bottom: 18px;
+    padding-bottom: 18px;
   }
 
   .profile-avatar {
-    width: 52px;
-    height: 52px;
-    font-size: 20px;
+    width: 56px;
+    height: 56px;
+    font-size: 22px;
   }
 
   .profile-info h3 {
@@ -552,29 +516,38 @@
     font-size: 12px;
   }
 
+  .stat-label {
+    font-size: 10px;
+  }
+
+  .stat-value {
+    font-size: 20px;
+  }
+
   .filter-buttons {
-    gap: 6px;
+    gap: 8px;
+    margin-bottom: 18px;
   }
 
   .filter-btn {
-    padding: 6px 12px;
+    padding: 7px 14px;
     font-size: 11px;
   }
 
   .card-header {
-    padding: 12px;
+    padding: 14px 16px;
   }
 
   .card-title-section h3 {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .card-details {
-    padding: 12px;
+    padding: 14px 16px;
   }
 
   .card-footer {
-    padding: 10px 12px;
+    padding: 12px 16px;
   }
 
   .total-price {
@@ -582,68 +555,59 @@
   }
 
   .empty-state {
-    padding: 30px 16px;
+    padding: 48px 24px;
   }
 
   .empty-icon {
-    font-size: 48px;
-    margin-bottom: 12px;
+    font-size: 56px;
   }
 
   .empty-state h3 {
-    font-size: 18px;
-  }
-
-  .empty-state p {
-    font-size: 13px;
+    font-size: 20px;
   }
 }
 
 @media (max-width: 480px) {
   .reservations-page {
-    padding: 12px 8px;
+    padding: 16px 10px;
   }
 
   .reservations-header h1 {
-    font-size: 18px;
-  }
-
-  .reservations-header p {
-    font-size: 12px;
+    font-size: 22px;
   }
 
   .user-profile-card {
-    margin-bottom: 16px;
+    padding: 16px;
   }
 
   .profile-stats {
-    gap: 8px;
+    gap: 0;
   }
 
   .stat {
-    padding: 10px 12px;
+    padding: 10px 0;
   }
 
   .stat-label {
-    font-size: 10px;
+    font-size: 9px;
   }
 
   .stat-value {
-    font-size: 16px;
+    font-size: 18px;
   }
 
   .detail-item {
-    gap: 6px;
+    gap: 8px;
   }
 
   .detail-icon {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     font-size: 11px;
   }
 
   .detail-label {
-    font-size: 10px;
+    font-size: 9px;
   }
 
   .detail-value {
@@ -651,15 +615,609 @@
   }
 
   .card-title-section h3 {
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .reservation-id {
-    font-size: 10px;
+    font-size: 9px;
   }
 
   .status-badge {
-    padding: 5px 10px;
+    padding: 4px 10px;
+    font-size: 8px;
+  }
+}
+
+/* ============================================ */
+/* MODAL STYLES - PREMIUM LOGIN STYLE */
+/* ============================================ */
+
+/* Modal Overlay / Backdrop */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.95) 100%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Modal Container - Centered Fixed Position */
+.modal-content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1001;
+  animation: modalPopIn 0.4s cubic-bezier(0.23, 1, 0.320, 1);
+}
+
+/* Modal Inner Content */
+.modal-content {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 50%, #f0f4ff 100%);
+  border-radius: 20px;
+  max-width: 450px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35), 
+              0 0 1px rgba(0, 0, 0, 0.1),
+              inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalPopIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Decorative Background Elements */
+.modal-content::before {
+  content: '';
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  opacity: 0.08;
+  top: -100px;
+  left: -100px;
+  pointer-events: none;
+}
+
+.modal-content::after {
+  content: '';
+  position: absolute;
+  width: 250px;
+  height: 250px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  border-radius: 50%;
+  opacity: 0.08;
+  bottom: -80px;
+  right: -80px;
+  pointer-events: none;
+}
+
+/* Scrollbar styling */
+.modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: rgba(102, 126, 234, 0.3);
+  border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(102, 126, 234, 0.5);
+}
+
+/* Modal Header */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.4);
+  position: relative;
+  z-index: 10;
+}
+
+.modal-header h2 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.modal-close-btn {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  font-size: 20px;
+  color: #667eea;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  border-radius: 10px;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.modal-close-btn:hover {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+  color: #764ba2;
+  transform: scale(1.1) rotate(90deg);
+  border-color: rgba(102, 126, 234, 0.4);
+}
+
+/* Modal Body */
+.modal-body {
+  padding: 24px;
+  background: transparent;
+  position: relative;
+  z-index: 5;
+}
+
+/* Concert Details */
+.concert-details {
+  animation: slideUp 0.5s ease-out 0.1s both;
+}
+
+/* Concert Image */
+.concert-image {
+  width: 100%;
+  height: 200px;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 18px;
+  box-shadow: 
+    0 16px 40px rgba(102, 126, 234, 0.2),
+    0 0 1px rgba(102, 126, 234, 0.2);
+  position: relative;
+}
+
+.concert-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.concert-image:hover img {
+  transform: scale(1.05);
+}
+
+.concert-image::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.1) 100%);
+  pointer-events: none;
+}
+
+/* Concert Info */
+.concert-info {
+  animation: slideUp 0.5s ease-out 0.15s both;
+}
+
+.concert-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 16px 0;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+/* Info Grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.info-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px;
+  background: linear-gradient(135deg, #f8f9ff 0%, #f3f4f6 100%);
+  border-radius: 10px;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.info-item:hover {
+  background: linear-gradient(135deg, #f0f4ff 0%, #f8fafc 100%);
+  border-color: #c7d2fe;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.12);
+}
+
+.info-icon {
+  width: 32px;
+  height: 32px;
+  color: #667eea;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.12), rgba(118, 75, 162, 0.12));
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.info-item:hover .info-icon {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+  transform: scale(1.1);
+}
+
+.info-label {
+  font-size: 10px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  display: block;
+}
+
+.info-value {
+  font-size: 13px;
+  color: #0f172a;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.1px;
+  line-height: 1.3;
+}
+
+.status-badge-modal {
+  grid-column: 1 / -1;
+}
+
+.no-details {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+  padding: 20px 16px;
+  background: linear-gradient(135deg, #f8f9ff 0%, #f3f4f6 100%);
+  border-radius: 10px;
+  border: 1px dashed #cbd5e1;
+}
+
+/* Reservation Summary */
+.reservation-summary {
+  background: linear-gradient(135deg, #f0f4ff 0%, #fdf8ff 100%);
+  border: 1px solid #e0e7ff;
+  border-radius: 12px;
+  padding: 14px;
+  margin: 16px 0 0 0;
+}
+
+.reservation-summary h4 {
+  font-size: 11px;
+  font-weight: 700;
+  color: #0f172a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 12px 0;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.reservation-summary h4::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+}
+
+.reservation-summary h4::after {
+  content: '';
+  width: 4px;
+  height: 4px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 12px;
+  color: #1f2937;
+  border-bottom: 1px solid rgba(102, 126, 234, 0.08);
+}
+
+.summary-item:last-child {
+  border-bottom: none;
+}
+
+.summary-item.total {
+  padding: 10px 0 0 0;
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(102, 126, 234, 0.2);
+  font-size: 13px;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.summary-item strong {
+  font-weight: 700;
+  color: inherit;
+}
+
+/* Modal Footer */
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid rgba(226, 232, 240, 0.4);
+  background: transparent;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  position: relative;
+  z-index: 5;
+}
+
+.btn-close {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-close::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s;
+  pointer-events: none;
+}
+
+.btn-close:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(102, 126, 234, 0.35);
+}
+
+.btn-close:hover::before {
+  transform: translateX(100%);
+}
+
+.btn-close:active {
+  transform: translateY(0);
+}
+
+/* Modal Responsive Design */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    max-width: 450px;
+    max-height: 85vh;
+    border-radius: 18px;
+    padding: 0;
+  }
+
+  .modal-header {
+    padding: 18px 20px;
+  }
+
+  .modal-header h2 {
+    font-size: 20px;
+  }
+
+  .modal-close-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .concert-image {
+    height: 180px;
+    margin-bottom: 14px;
+    border-radius: 12px;
+  }
+
+  .concert-title {
+    font-size: 20px;
+    margin-bottom: 14px;
+  }
+
+  .info-grid {
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .info-item {
+    padding: 10px;
+  }
+
+  .info-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  .info-label {
     font-size: 9px;
+  }
+
+  .info-value {
+    font-size: 12px;
+  }
+
+  .no-details {
+    font-size: 13px;
+    padding: 20px 14px;
+  }
+
+  .reservation-summary {
+    padding: 12px;
+    margin-top: 14px;
+  }
+
+  .reservation-summary h4 {
+    font-size: 10px;
+    margin-bottom: 10px;
+  }
+
+  .summary-item {
+    font-size: 11px;
+    padding: 6px 0;
+  }
+
+  .modal-footer {
+    padding: 14px 20px;
+    gap: 10px;
+  }
+
+  .btn-close {
+    padding: 9px 20px;
+    font-size: 11px;
+    border-radius: 7px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-header {
+    padding: 16px 18px;
+  }
+
+  .modal-header h2 {
+    font-size: 18px;
+  }
+
+  .modal-close-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+
+  .modal-body {
+    padding: 16px;
+  }
+
+  .concert-image {
+    height: 160px;
+    margin-bottom: 12px;
+  }
+
+  .concert-title {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .info-item {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .info-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+
+  .info-label {
+    font-size: 8px;
+    letter-spacing: 0.3px;
+  }
+
+  .info-value {
+    font-size: 11px;
+  }
+
+  .reservation-summary {
+    padding: 12px;
+    margin-top: 12px;
+  }
+
+  .reservation-summary h4 {
+    font-size: 9px;
+    margin-bottom: 8px;
+    gap: 4px;
+  }
+
+  .reservation-summary h4::before,
+  .reservation-summary h4::after {
+    width: 3px;
+    height: 3px;
+  }
+
+  .summary-item {
+    font-size: 10px;
+    padding: 5px 0;
+  }
+
+  .modal-footer {
+    padding: 12px 16px;
+    gap: 8px;
+  }
+
+  .btn-close {
+    padding: 8px 16px;
+    font-size: 9px;
+    border-radius: 6px;
   }
 }

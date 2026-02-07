@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
-import { FaTicketAlt, FaCalendarAlt, FaUser, FaEnvelope, FaMusic } from 'react-icons/fa'
+import { FaTicketAlt, FaCalendarAlt, FaUser, FaEnvelope, FaMusic, FaTimes, FaMapMarkerAlt, FaMicrophone } from 'react-icons/fa'
 import './MyReservations.css'
 
 function MyReservations() {
@@ -9,6 +9,9 @@ function MyReservations() {
   const [reservations, setReservations] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
+  const [selectedReservation, setSelectedReservation] = useState(null)
+  const [concertDetails, setConcertDetails] = useState(null)
+  const [showModal, setShowModal] = useState(false)
 
   useEffect(() => {
     if (!user || !user.email) {
@@ -32,6 +35,28 @@ function MyReservations() {
 
     fetchReservations()
   }, [user])
+
+  // Function to handle concert card click and fetch details
+  const handleConcertCardClick = async (reservation) => {
+    try {
+      setSelectedReservation(reservation)
+      // Fetch concert details
+      const response = await axios.get(`/api/concerts/${reservation.concertId}`)
+      setConcertDetails(response.data)
+      setShowModal(true)
+    } catch (error) {
+      console.error('Error fetching concert details:', error)
+      // Show reservation details even if concert fetch fails
+      setConcertDetails(null)
+      setShowModal(true)
+    }
+  }
+
+  const closeModal = () => {
+    setShowModal(false)
+    setSelectedReservation(null)
+    setConcertDetails(null)
+  }
 
   const filteredReservations = filter === 'all' 
     ? reservations 
@@ -136,7 +161,8 @@ function MyReservations() {
                 <div 
                   key={reservation.id} 
                   className="reservation-card"
-                  style={{ animationDelay: `${index * 0.1}s` }}
+                  onClick={() => handleConcertCardClick(reservation)}
+                  style={{ animationDelay: `${index * 0.1}s`, cursor: 'pointer' }}
                 >
                   {/* Card Header */}
                   <div className="card-header">
@@ -220,6 +246,136 @@ function MyReservations() {
           </div>
         )}
       </div>
+
+      {/* Concert Details Modal */}
+      {showModal && selectedReservation && (
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="modal-header">
+              <h2>รายละเอียดคอนเสิร์ต</h2>
+              <button className="modal-close-btn" onClick={closeModal}>
+                <FaTimes />
+              </button>
+            </div>
+
+            {/* Concert Details */}
+            <div className="modal-body">
+              {concertDetails ? (
+                <div className="concert-details">
+                  {/* Concert Image */}
+                  {concertDetails.imageUrl && (
+                    <div className="concert-image">
+                      <img src={concertDetails.imageUrl} alt={concertDetails.name} />
+                    </div>
+                  )}
+
+                  {/* Concert Info */}
+                  <div className="concert-info">
+                    <h3 className="concert-title">{concertDetails.name}</h3>
+                    
+                    <div className="info-grid">
+                      <div className="info-item">
+                        <FaMicrophone className="info-icon" />
+                        <div>
+                          <p className="info-label">ศิลปิน</p>
+                          <p className="info-value">{concertDetails.artist}</p>
+                        </div>
+                      </div>
+
+                      <div className="info-item">
+                        <FaCalendarAlt className="info-icon" />
+                        <div>
+                          <p className="info-label">วันที่แสดง</p>
+                          <p className="info-value">{new Date(concertDetails.date).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                        </div>
+                      </div>
+
+                      <div className="info-item">
+                        <FaMapMarkerAlt className="info-icon" />
+                        <div>
+                          <p className="info-label">สถานที่</p>
+                          <p className="info-value">{concertDetails.venue}</p>
+                        </div>
+                      </div>
+
+                      <div className="info-item">
+                        <FaTicketAlt className="info-icon" />
+                        <div>
+                          <p className="info-label">ราคาต่อใบ</p>
+                          <p className="info-value">฿{concertDetails.price.toLocaleString()}</p>
+                        </div>
+                      </div>
+
+                      <div className="info-item">
+                        <FaMusic className="info-icon" />
+                        <div>
+                          <p className="info-label">บัตรที่เหลือ</p>
+                          <p className="info-value">{concertDetails.availableTickets} / {concertDetails.totalTickets} ใบ</p>
+                        </div>
+                      </div>
+
+                      <div className="info-item">
+                        <div className="status-badge-modal">
+                          <p className="info-label">สถานะ</p>
+                          <p className="info-value" style={{ 
+                            color: concertDetails.status === 'open' ? '#10b981' : '#ef4444',
+                            fontWeight: '700'
+                          }}>
+                            {concertDetails.status === 'open' ? '📅 เปิดจอง' : '❌ ปิดจอง'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Reservation Summary */}
+                    <div className="reservation-summary">
+                      <h4>สรุปการจอง</h4>
+                      <div className="summary-item">
+                        <span>จำนวนบัตร:</span>
+                        <strong>{selectedReservation.quantity} ใบ</strong>
+                      </div>
+                      <div className="summary-item">
+                        <span>ราคาต่อใบ:</span>
+                        <strong>฿{Math.round(selectedReservation.totalPrice / selectedReservation.quantity).toLocaleString()}</strong>
+                      </div>
+                      <div className="summary-item total">
+                        <span>ราคารวม:</span>
+                        <strong>฿{selectedReservation.totalPrice.toLocaleString()}</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="concert-details">
+                  <div className="concert-info">
+                    <h3 className="concert-title">{selectedReservation.concertName}</h3>
+                    <p className="no-details">ไม่สามารถโหลดรายละเอียดคอนเสิร์ต</p>
+                    
+                    {/* Show available reservation info */}
+                    <div className="reservation-summary">
+                      <h4>สรุปการจอง</h4>
+                      <div className="summary-item">
+                        <span>จำนวนบัตร:</span>
+                        <strong>{selectedReservation.quantity} ใบ</strong>
+                      </div>
+                      <div className="summary-item">
+                        <span>ราคารวม:</span>
+                        <strong>฿{selectedReservation.totalPrice.toLocaleString()}</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="modal-footer">
+              <button className="btn-close" onClick={closeModal}>ปิด</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
