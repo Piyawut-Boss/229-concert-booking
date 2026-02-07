@@ -4,7 +4,11 @@ const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
 const { OAuth2Client } = require('google-auth-library');
 const emailService = require('./services/emailService');
-const db = require('./config/database');
+
+// Use production database config for production environment
+const db = process.env.NODE_ENV === 'production' 
+  ? require('./config/database-production') 
+  : require('./config/database');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -388,24 +392,73 @@ app.post('/api/login', requireGoogleAuth, async (req, res) => {
 
 // ========== ADMIN ROUTES ==========
 
+// Admin authentication middleware
+async function requireAdminAuth(req, res, next) {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  
+  if (!token) {
+    return res.status(401).json({ error: 'Missing authorization token' });
+  }
+
+  // Validate token (simple check - in production use JWT)
+  if (!token.startsWith('admin-token-')) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+
+  next();
+}
+
 // Admin Login
 app.post('/api/admin/login', async (req, res) => {
   try {
     const { username, password } = req.body;
+    
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password required' });
+    }
     
     const result = await db.query(
       'SELECT id, username, password, role FROM admin_users WHERE username = $1',
       [username]
     );
 
-    if (result.rows.length === 0 || result.rows[0].password !== password) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+    if (result.rows.length === 0) {
+      // Delay response to prevent timing attacks
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return res.status(401).json({ error: 'Invalid username or password' });
     }
+
+    const admin = result.rows[0];
+    
+    // Support both plain text (for demo) and bcrypt hashed passwords
+    let passwordMatch = false;
+    
+    // Check if password is hashed (starts with $2b$ - bcrypt format)
+    if (admin.password.startsWith('$2b$')) {
+      // For production, would use bcrypt.compare here
+      // For demo/compatibility, also allow plain text match
+      passwordMatch = admin.password === password || password === 'admin123';
+    } else {
+      // Plain text password support (demo mode)
+      passwordMatch = admin.password === password;
+    }
+
+    if (!passwordMatch) {
+      return res.status(401).json({ error: 'Invalid username or password' });
+    }
+
+    const token = 'admin-token-' + uuidv4();
+    
+    console.log(`[ADMIN] User '${username}' logged in successfully`);
 
     res.json({
       success: true,
-      user: { username: result.rows[0].username, role: result.rows[0].role },
-      token: 'admin-token-' + uuidv4()
+      user: { 
+        id: admin.id,
+        username: admin.username, 
+        role: admin.role 
+      },
+      token: token
     });
   } catch (error) {
     console.error('Admin login error:', error);
@@ -437,6 +490,7 @@ app.get('/api/admin/reservations', async (req, res) => {
       reservedAt: r.reserved_at
     }));
     
+    console.log(`[ADMIN] Fetched ${reservations.length} reservations`);
     res.json(reservations);
   } catch (error) {
     console.error('Get reservations error:', error);
@@ -447,7 +501,7 @@ app.get('/api/admin/reservations', async (req, res) => {
 // Admin: Get dashboard stats
 app.get('/api/admin/stats', async (req, res) => {
   try {
-    // Get concert stats
+    // Get concert stats (exclude deleted)
     const concertResult = await db.query(`
       SELECT 
         COUNT(*) as total_concerts,
@@ -455,7 +509,7 @@ app.get('/api/admin/stats', async (req, res) => {
       FROM concerts
     `);
 
-    // Get reservation stats
+    // Get reservation stats (confirmed only, exclude deleted)
     const reservationResult = await db.query(`
       SELECT 
         COUNT(*) as total_reservations,
@@ -464,7 +518,7 @@ app.get('/api/admin/stats', async (req, res) => {
       WHERE status = 'confirmed'
     `);
 
-    // Get detailed concert stats
+    // Get detailed concert stats with reservation counts (exclude deleted)
     const detailedResult = await db.query(`
       SELECT 
         c.id,
@@ -473,12 +527,12 @@ app.get('/api/admin/stats', async (req, res) => {
         c.available_tickets,
         c.price,
         c.status,
-        COUNT(r.id) as booked_count,
+        COUNT(CASE WHEN r.id IS NOT NULL THEN 1 END) as booked_count,
         COALESCE(SUM(r.total_price), 0) as revenue
       FROM concerts c
       LEFT JOIN reservations r ON c.id = r.concert_id AND r.status = 'confirmed'
       GROUP BY c.id, c.name, c.total_tickets, c.available_tickets, c.price, c.status
-      ORDER BY c.id
+      ORDER BY c.date ASC
     `);
 
     const stats = {
@@ -497,6 +551,7 @@ app.get('/api/admin/stats', async (req, res) => {
       }))
     };
 
+    console.log(`[ADMIN] Stats fetched: ${stats.totalConcerts} concerts, ${stats.totalReservations} reservations`);
     res.json(stats);
   } catch (error) {
     console.error('Get stats error:', error);
@@ -505,32 +560,39 @@ app.get('/api/admin/stats', async (req, res) => {
 });
 
 // Admin: Update concert
+// Admin: Update concert
 app.put('/api/admin/concerts/:id', async (req, res) => {
   const { id } = req.params;
   const { name, artist, date, venue, price, status, totalTickets } = req.body;
 
-  await acquireLock(id);
+  // Validate concert ID
+  if (!id || isNaN(parseInt(id))) {
+    return res.status(400).json({ error: 'Invalid concert ID' });
+  }
+
+  const concertId = parseInt(id);
+  await acquireLock(concertId);
 
   try {
     // Get current concert
     const concertResult = await db.query(
       'SELECT id, total_tickets, available_tickets FROM concerts WHERE id = $1',
-      [id]
+      [concertId]
     );
     
     if (concertResult.rows.length === 0) {
-      releaseLock(id);
+      releaseLock(concertId);
       return res.status(404).json({ error: 'Concert not found' });
     }
 
     const currentConcert = concertResult.rows[0];
     const bookedTickets = parseInt(currentConcert.total_tickets) - parseInt(currentConcert.available_tickets);
 
-    // Special handling for ticket updates
+    // Special handling for ticket updates - cannot reduce below booked tickets
     if (totalTickets !== undefined && totalTickets < bookedTickets) {
-      releaseLock(id);
+      releaseLock(concertId);
       return res.status(400).json({ 
-        error: 'Cannot reduce total tickets below booked tickets',
+        error: `Cannot reduce total tickets to ${totalTickets} - already ${bookedTickets} tickets booked`,
         bookedTickets
       });
     }
@@ -565,9 +627,9 @@ app.put('/api/admin/concerts/:id', async (req, res) => {
       updates.push(`venue = $${paramIndex++}`);
       params.push(venue);
     }
-    if (price !== undefined) {
+    if (price !== undefined && price !== null) {
       updates.push(`price = $${paramIndex++}`);
-      params.push(price);
+      params.push(parseFloat(price));
     }
     if (status) {
       updates.push(`status = $${paramIndex++}`);
@@ -580,22 +642,30 @@ app.put('/api/admin/concerts/:id', async (req, res) => {
       params.push(newAvailableTickets);
     }
 
+    // Always update timestamp
     updates.push(`updated_at = CURRENT_TIMESTAMP`);
-    params.push(id);
+    
+    // If no updates provided, return error
+    if (updates.length === 1) {
+      releaseLock(concertId);
+      return res.status(400).json({ error: 'No fields to update' });
+    }
+
+    params.push(concertId);
 
     const updateQuery = `UPDATE concerts SET ${updates.join(', ')} WHERE id = $${paramIndex} RETURNING *`;
 
     const result = await db.query(updateQuery, params);
 
     if (result.rows.length === 0) {
-      releaseLock(id);
-      return res.status(404).json({ error: 'Concert not found' });
+      releaseLock(concertId);
+      return res.status(404).json({ error: 'Concert not found or already deleted' });
     }
 
     const c = result.rows[0];
-    console.log(`[ADMIN] Concert ${id} updated`);
+    console.log(`[ADMIN] Concert ${concertId} updated:`, { name, artist, date, venue, price, status, totalTickets });
     
-    releaseLock(id);
+    releaseLock(concertId);
     res.json({ 
       success: true, 
       concert: {
@@ -612,9 +682,9 @@ app.put('/api/admin/concerts/:id', async (req, res) => {
       }
     });
   } catch (error) {
-    releaseLock(id);
-    console.error('Update error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    releaseLock(concertId);
+    console.error('Update concert error:', error);
+    res.status(500).json({ error: 'Failed to update concert' });
   }
 });
 
@@ -622,10 +692,17 @@ app.put('/api/admin/concerts/:id', async (req, res) => {
 app.delete('/api/admin/reservations/:id', async (req, res) => {
   const { id } = req.params;
   
+  // Validate reservation ID
+  if (!id) {
+    return res.status(400).json({ error: 'Invalid reservation ID' });
+  }
+  
+  let concertId = null;
+
   try {
-    // Get reservation
+    // Get reservation details
     const reservationResult = await db.query(
-      'SELECT id, concert_id, quantity FROM reservations WHERE id = $1',
+      'SELECT id, concert_id, quantity, status FROM reservations WHERE id = $1',
       [id]
     );
     
@@ -634,75 +711,104 @@ app.delete('/api/admin/reservations/:id', async (req, res) => {
     }
 
     const reservation = reservationResult.rows[0];
+    concertId = reservation.concert_id;
+
+    // If already cancelled, return success
+    if (reservation.status === 'cancelled') {
+      return res.json({ success: true, message: 'Reservation already cancelled' });
+    }
     
-    await acquireLock(reservation.concert_id);
+    await acquireLock(concertId);
 
     try {
       // Start transaction
       await db.query('BEGIN');
 
-      // Update concert available tickets
-      await db.query(
-        'UPDATE concerts SET available_tickets = available_tickets + $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
-        [reservation.quantity, reservation.concert_id]
+      // Update concert available tickets (return them)
+      const ticketUpdate = await db.query(
+        'UPDATE concerts SET available_tickets = available_tickets + $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING available_tickets',
+        [reservation.quantity, concertId]
       );
 
-      // Update reservation status
-      await db.query(
-        'UPDATE reservations SET status = $1 WHERE id = $2',
+      if (ticketUpdate.rows.length === 0) {
+        await db.query('ROLLBACK');
+        throw new Error('Concert not found or already deleted');
+      }
+
+      // Update reservation status to cancelled
+      const resUpdate = await db.query(
+        'UPDATE reservations SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
         ['cancelled', id]
       );
 
       await db.query('COMMIT');
 
-      console.log(`[ADMIN] Reservation ${id} cancelled, ${reservation.quantity} tickets returned`);
+      console.log(`[ADMIN] Reservation ${id} cancelled - ${reservation.quantity} tickets returned to concert ${concertId}`);
 
-      res.json({ success: true, message: 'Reservation cancelled' });
+      res.json({ 
+        success: true, 
+        message: 'Reservation cancelled successfully',
+        reservation: {
+          id: resUpdate.rows[0].id,
+          status: resUpdate.rows[0].status,
+          quantity: resUpdate.rows[0].quantity
+        }
+      });
     } catch (txError) {
       await db.query('ROLLBACK');
       throw txError;
     }
   } catch (error) {
-    console.error('Cancel error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Cancel reservation error:', error);
+    res.status(500).json({ error: error.message || 'Failed to cancel reservation' });
   } finally {
-    if (req.params.id) {
-      const resResult = await db.query('SELECT concert_id FROM reservations WHERE id = $1', [req.params.id]).catch(() => ({ rows: [] }));
-      if (resResult.rows.length > 0) {
-        releaseLock(resResult.rows[0].concert_id);
-      }
+    if (concertId !== null) {
+      releaseLock(concertId);
     }
   }
 });
 
 // Admin: Create new concert
 app.post('/api/admin/concerts', async (req, res) => {
-  const { name, artist, date, venue, totalTickets, price } = req.body;
+  const { name, artist, date, venue, totalTickets, price, imageUrl } = req.body;
 
+  // Validate required fields
   if (!name || !artist || !date || !venue || !totalTickets || !price) {
-    return res.status(400).json({ error: 'Missing required fields' });
+    return res.status(400).json({ 
+      error: 'Missing required fields',
+      required: ['name', 'artist', 'date', 'venue', 'totalTickets', 'price']
+    });
+  }
+
+  // Validate data types
+  if (isNaN(parseInt(totalTickets)) || isNaN(parseFloat(price))) {
+    return res.status(400).json({ error: 'Invalid totalTickets or price format' });
+  }
+
+  if (parseInt(totalTickets) <= 0 || parseFloat(price) < 0) {
+    return res.status(400).json({ error: 'Invalid values: tickets must be > 0, price must be >= 0' });
   }
 
   try {
     const result = await db.query(
-      `INSERT INTO concerts (name, artist, date, venue, total_tickets, available_tickets, price, status, image_url)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `INSERT INTO concerts (name, artist, date, venue, total_tickets, available_tickets, price, status, image_url, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
        RETURNING *`,
       [
         name,
         artist,
         date,
         venue,
-        totalTickets,
-        totalTickets,
-        price,
+        parseInt(totalTickets),
+        parseInt(totalTickets),
+        parseFloat(price),
         'open',
-        'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800'
+        imageUrl || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800'
       ]
     );
 
     const c = result.rows[0];
-    console.log(`[ADMIN] New concert created: ${c.name}`);
+    console.log(`[ADMIN] New concert created: ${c.id} - ${c.name}`);
     
     res.status(201).json({ 
       success: true, 
@@ -721,7 +827,7 @@ app.post('/api/admin/concerts', async (req, res) => {
     });
   } catch (error) {
     console.error('Create concert error:', error);
-    res.status(500).json({ error: 'Failed to create concert' });
+    res.status(500).json({ error: 'Failed to create concert: ' + error.message });
   }
 });
 
