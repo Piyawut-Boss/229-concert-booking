@@ -2,13 +2,17 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import BookingModal from "../components/BookingModal";
 import "./HomePage.css";
-import { FaCalendarAlt, FaMapMarkerAlt } from "react-icons/fa";
+import { FaCalendarAlt, FaMapMarkerAlt, FaSearch, FaFilter } from "react-icons/fa";
 
 function HomePage() {
   const [concerts, setConcerts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedConcert, setSelectedConcert] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [maxPrice, setMaxPrice] = useState(10000);
+  const [showFilters, setShowFilters] = useState(false);
   const sliderRef = useRef(null);
   const [sliderParams, setSliderParams] = useState({
     cardWidth: 0,
@@ -35,6 +39,24 @@ function HomePage() {
       setLoading(false);
     }
   };
+
+  // Filter concerts based on search and filters
+  const filteredConcerts = concerts.filter((concert) => {
+    const matchesSearch =
+      concert.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      concert.artist.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      concert.venue.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus =
+      filterStatus === "all" ||
+      (filterStatus === "open" && concert.status === "open") ||
+      (filterStatus === "closed" && concert.status !== "open") ||
+      (filterStatus === "available" && concert.availableTickets > 0);
+
+    const matchesPrice = concert.price <= maxPrice;
+
+    return matchesSearch && matchesStatus && matchesPrice;
+  });
 
   const originalRecommended = concerts.slice(0, 5);
   const infiniteConcerts = [
@@ -291,9 +313,83 @@ function HomePage() {
 
         <section className="all-concerts-section">
           <h2 className="section-title">All Concerts</h2>
-          <div className="concert-list">
-            {concerts.map((concert) => renderHorizontalConcertCard(concert))}
+          
+          {/* Search and Filter Bar */}
+          <div className="search-filter-bar">
+            <div className="search-filter-header">
+              <div className="search-wrapper">
+                <FaSearch className="search-icon" />
+                <input
+                  type="text"
+                  placeholder="Search by concert name, artist, or venue..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="search-input"
+                />
+              </div>
+              <button
+                className="filter-toggle-btn"
+                onClick={() => setShowFilters(!showFilters)}
+                title="Toggle Filters"
+              >
+                <FaFilter className="filter-icon" />
+              </button>
+            </div>
+
+            {showFilters && (
+              <div className="filter-controls">
+                <div className="filter-group">
+                  <label>Status:</label>
+                  <select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    className="filter-select"
+                  >
+                    <option value="all">All</option>
+                    <option value="open">Open</option>
+                    <option value="available">Available Tickets</option>
+                    <option value="closed">Closed</option>
+                  </select>
+                </div>
+
+                <div className="filter-group">
+                  <label>Max Price: ฿{maxPrice.toLocaleString('th-TH')}</label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100000"
+                  step="1000"
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(Number(e.target.value))}
+                  className="price-slider"
+                />
+              </div>
+
+              <button
+                className="reset-btn"
+                onClick={() => {
+                  setSearchTerm("");
+                  setFilterStatus("all");
+                  setMaxPrice(10000);
+                }}
+              >
+                Reset Filters
+              </button>
+              </div>
+            )}
           </div>
+
+          {filteredConcerts.length === 0 ? (
+            <div className="no-results">
+              <p>No concerts found matching your criteria.</p>
+            </div>
+          ) : (
+            <div className="concert-list">
+              {filteredConcerts.map((concert) =>
+                renderHorizontalConcertCard(concert)
+              )}
+            </div>
+          )}
         </section>
       </div>
 
