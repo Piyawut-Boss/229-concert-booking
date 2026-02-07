@@ -3,27 +3,56 @@ import { createContext, useState, useContext, useEffect } from 'react'
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
+  // Regular user state (Google login)
   const [user, setUser] = useState(null)
+  // Admin state
+  const [admin, setAdmin] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // Check if user is already logged in (from localStorage)
+  // Check if user/admin is already logged in (from localStorage)
   useEffect(() => {
     const storedUser = localStorage.getItem('user')
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser))
+        const userData = JSON.parse(storedUser)
+        // Add user role if not present
+        if (!userData.role) {
+          userData.role = 'user'
+        }
+        setUser(userData)
       } catch (e) {
         localStorage.removeItem('user')
+      }
+    }
+
+    const storedAdmin = localStorage.getItem('adminUser')
+    if (storedAdmin) {
+      try {
+        const adminData = JSON.parse(storedAdmin)
+        setAdmin(adminData)
+      } catch (e) {
+        localStorage.removeItem('adminUser')
+        localStorage.removeItem('adminToken')
       }
     }
     setLoading(false)
   }, [])
 
   const login = (userData) => {
-    // userData now comes with: name, email, picture, token, googleId
-    setUser(userData)
-    localStorage.setItem('user', JSON.stringify(userData))
-    return userData
+    // userData comes with: name, email, picture, token, googleId
+    // Add user role
+    const userWithRole = { ...userData, role: 'user' }
+    setUser(userWithRole)
+    localStorage.setItem('user', JSON.stringify(userWithRole))
+    return userWithRole
+  }
+
+  const loginAdmin = (adminData, token) => {
+    // adminData comes with: id, username, role
+    setAdmin(adminData)
+    localStorage.setItem('adminUser', JSON.stringify(adminData))
+    localStorage.setItem('adminToken', token)
+    return adminData
   }
 
   const logout = () => {
@@ -31,8 +60,23 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('user')
   }
 
+  const logoutAdmin = () => {
+    setAdmin(null)
+    localStorage.removeItem('adminUser')
+    localStorage.removeItem('adminToken')
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      admin,
+      loading, 
+      login, 
+      logout,
+      loginAdmin,
+      logoutAdmin,
+      isAdminLoggedIn: !!admin
+    }}>
       {children}
     </AuthContext.Provider>
   )

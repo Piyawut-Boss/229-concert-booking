@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import axios from 'axios'
 import './AdminDashboard.css'
 
 function AdminDashboard() {
   const navigate = useNavigate()
+  const { admin, logoutAdmin } = useAuth()
   const [stats, setStats] = useState(null)
   const [reservations, setReservations] = useState([])
   const [loading, setLoading] = useState(true)
@@ -14,7 +16,7 @@ function AdminDashboard() {
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken')
-    if (!token) {
+    if (!token || !admin) {
       navigate('/admin')
       return
     }
@@ -22,7 +24,7 @@ function AdminDashboard() {
     fetchData()
     const interval = setInterval(fetchData, 5000)
     return () => clearInterval(interval)
-  }, [navigate])
+  }, [navigate, admin])
 
   const fetchData = async () => {
     try {
@@ -44,8 +46,7 @@ function AdminDashboard() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('adminToken')
-    localStorage.removeItem('adminUser')
+    logoutAdmin()
     navigate('/admin')
   }
 

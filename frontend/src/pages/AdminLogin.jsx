@@ -1,9 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import axios from 'axios'
+import { FaLock, FaUser } from 'react-icons/fa'
+import './AdminLogin.css'
 
 function AdminLogin() {
   const navigate = useNavigate()
+  const { loginAdmin } = useAuth()
   const [formData, setFormData] = useState({
     username: '',
     password: ''
@@ -26,82 +30,99 @@ function AdminLogin() {
     try {
       const response = await axios.post('/api/admin/login', formData)
       
-      // Store token in localStorage
-      localStorage.setItem('adminToken', response.data.token)
-      localStorage.setItem('adminUser', JSON.stringify(response.data.user))
+      // Use new loginAdmin function
+      loginAdmin(response.data.user, response.data.token)
       
       navigate('/admin/dashboard')
     } catch (error) {
-      setError(error.response?.data?.error || 'เข้าสู่ระบบไม่สำเร็จ')
+      setError(error.response?.data?.error || 'Login failed. Please check your credentials.')
       setLoading(false)
     }
   }
 
   return (
-    <div className="page-content">
-      <div className="container">
-        <div className="page-header">
-          <h1>🔐 Admin Login</h1>
-          <p>เข้าสู่ระบบจัดการ</p>
+    <div className="admin-login-page">
+      <div className="admin-login-container">
+        {/* Left side - Branding */}
+        <div className="admin-login-brand">
+          <div className="brand-icon">🔐</div>
+          <h1>Admin Portal</h1>
+          <p>Concert Ticket Management System</p>
+          <div className="brand-features">
+            <div className="feature">✓ Secure Access</div>
+            <div className="feature">✓ Role-Based Control</div>
+            <div className="feature">✓ Real-time Analytics</div>
+          </div>
         </div>
 
-        <div className="card" style={{maxWidth: '400px', margin: '0 auto'}}>
-          <div style={{textAlign: 'center', marginBottom: '24px'}}>
-            <div style={{
-              fontSize: '64px',
-              marginBottom: '16px'
-            }}>
-              👨‍💼
-            </div>
-            <h2>Admin Dashboard</h2>
+        {/* Right side - Login Form */}
+        <div className="admin-login-form-container">
+          <div className="form-header">
+            <h2>Admin Login</h2>
+            <p>Please login with your admin credentials</p>
           </div>
 
           {error && (
             <div className="alert alert-error">
-              {error}
+              <strong>⚠️ Error:</strong> {error}
             </div>
           )}
 
-          <div className="alert alert-info" style={{fontSize: '14px'}}>
-            <strong>ทดสอบระบบ:</strong><br/>
-            Username: admin<br/>
-            Password: admin123
-          </div>
-
-          <form onSubmit={handleSubmit}>
-            <div className="input-group">
-              <label>Username</label>
+          <form onSubmit={handleSubmit} className="admin-login-form">
+            <div className="form-group">
+              <label htmlFor="username">
+                <FaUser /> Username
+              </label>
               <input
+                id="username"
                 type="text"
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
+                placeholder="Enter admin username"
                 required
-                placeholder="กรอก username"
+                disabled={loading}
+                autoComplete="username"
               />
             </div>
 
-            <div className="input-group">
-              <label>Password</label>
+            <div className="form-group">
+              <label htmlFor="password">
+                <FaLock /> Password
+              </label>
               <input
+                id="password"
                 type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
+                placeholder="Enter admin password"
                 required
-                placeholder="กรอก password"
+                disabled={loading}
+                autoComplete="current-password"
               />
             </div>
 
             <button 
               type="submit" 
-              className="btn btn-primary" 
-              style={{width: '100%'}}
+              className="btn-login-submit"
               disabled={loading}
             >
-              {loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
+              {loading ? '🔄 Logging in...' : '🔓 Login'}
             </button>
           </form>
+
+          <div className="form-notes">
+            <div className="note-section">
+              <h4>🚀 Demo Credentials:</h4>
+              <p><strong>Username:</strong> admin</p>
+              <p><strong>Password:</strong> admin123</p>
+            </div>
+            <div className="note-section">
+              <h4>📝 Security Note:</h4>
+              <p>Only administrators with valid credentials can access this panel. User accounts created through Google login have limited access.</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

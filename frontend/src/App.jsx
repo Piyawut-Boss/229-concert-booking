@@ -6,11 +6,12 @@ import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
 import MyReservations from './pages/MyReservations'
 import LoginModal from './components/LoginModal'
+import AdminRoute from './components/AdminRoute'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import './App.css'
 
 function AppContent() {
-  const { user, logout } = useAuth()
+  const { user, admin, logout } = useAuth()
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
 
   return (
@@ -23,7 +24,8 @@ function AppContent() {
             <div className="nav-links">
               <Link to="/" className="nav-link">หน้าหลัก</Link>
               <Link to="/my-reservations" className="nav-link">การจองของฉัน</Link>
-              <Link to="/admin" className="nav-link">Admin</Link>
+              {admin && <Link to="/admin/dashboard" className="nav-link">📊 Admin</Link>}
+              {!admin && <Link to="/admin" className="nav-link">🔐 Admin Login</Link>}
               {user ? (
                 <div className="user-section">
                   <span className="user-name">👤 {user.name}</span>
@@ -45,7 +47,14 @@ function AppContent() {
           <Route path="/" element={<HomePage />} />
           <Route path="/my-reservations" element={<MyReservations />} />
           <Route path="/admin" element={<AdminLogin />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route 
+            path="/admin/dashboard" 
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            } 
+          />
         </Routes>
 
         <footer className="footer">
