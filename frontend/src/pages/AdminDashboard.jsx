@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import './AdminDashboard.css'
 
 function AdminDashboard() {
   const navigate = useNavigate()
@@ -107,77 +108,76 @@ function AdminDashboard() {
   return (
     <div className="page-content">
       <div className="container">
-        <div style={{
-          background: 'white',
-          borderRadius: '12px',
-          padding: '20px',
-          marginBottom: '30px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
+        {/* Header Section */}
+        <div className="admin-header">
           <div>
-            <h1 style={{marginBottom: '8px'}}>🎛️ Admin Dashboard</h1>
-            <p style={{color: '#6b7280'}}>
-              ระบบจัดการคอนเสิร์ตและการจอง
-            </p>
+            <h1>🎛️ Admin Dashboard</h1>
+            <p className="admin-subtitle">ระบบจัดการคอนเสิร์ตและการจอง</p>
           </div>
           <button className="btn btn-danger" onClick={handleLogout}>
             ออกจากระบบ
           </button>
         </div>
 
-        <div style={{marginBottom: '20px'}}>
-          <div style={{display: 'flex', gap: '12px', background: 'white', padding: '12px', borderRadius: '12px'}}>
-            <button
-              className={`btn ${activeTab === 'dashboard' ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => setActiveTab('dashboard')}
-            >
-              📊 Dashboard
-            </button>
-            <button
-              className={`btn ${activeTab === 'concerts' ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => setActiveTab('concerts')}
-            >
-              🎵 จัดการคอนเสิร์ต
-            </button>
-            <button
-              className={`btn ${activeTab === 'reservations' ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => setActiveTab('reservations')}
-            >
-              📋 การจองทั้งหมด
-            </button>
-          </div>
+        {/* Navigation Tabs */}
+        <div className="admin-tabs">
+          <button
+            className={`tab-btn ${activeTab === 'dashboard' ? 'active' : 'inactive'}`}
+            onClick={() => setActiveTab('dashboard')}
+          >
+            📊 Dashboard
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'concerts' ? 'active' : 'inactive'}`}
+            onClick={() => setActiveTab('concerts')}
+          >
+            🎵 จัดการคอนเสิร์ต
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'reservations' ? 'active' : 'inactive'}`}
+            onClick={() => setActiveTab('reservations')}
+          >
+            📋 การจองทั้งหมด
+          </button>
         </div>
 
+        {/* Dashboard Content */}
         {activeTab === 'dashboard' && (
           <>
             {stats ? (
               <>
                 <div className="stats-grid">
-                  <div className="stat-card">
-                    <div className="stat-icon">🎵</div>
-                    <div className="stat-label">คอนเสิร์ตทั้งหมด</div>
-                    <div className="stat-value">{stats.totalConcerts}</div>
+                  <div className="stat-card stat-blue">
+                    <div className="stat-icon-wrapper stat-blue">🎵</div>
+                    <div className="stat-content">
+                      <div className="stat-label">คอนเสิร์ตทั้งหมด</div>
+                      <div className="stat-value">{stats.totalConcerts}</div>
+                    </div>
                   </div>
                   
-                  <div className="stat-card">
-                    <div className="stat-icon">✅</div>
-                    <div className="stat-label">เปิดขายอยู่</div>
-                    <div className="stat-value">{stats.activeConcerts}</div>
+                  <div className="stat-card stat-green">
+                    <div className="stat-icon-wrapper stat-green">✅</div>
+                    <div className="stat-content">
+                      <div className="stat-label">เปิดขายอยู่</div>
+                      <div className="stat-value">{stats.activeConcerts}</div>
+                    </div>
                   </div>
                   
-                  <div className="stat-card">
-                    <div className="stat-icon">📋</div>
-                    <div className="stat-label">การจองทั้งหมด</div>
-                    <div className="stat-value">{stats.totalReservations}</div>
+                  <div className="stat-card stat-orange">
+                    <div className="stat-icon-wrapper stat-orange">📋</div>
+                    <div className="stat-content">
+                      <div className="stat-label">การจองทั้งหมด</div>
+                      <div className="stat-value">{stats.totalReservations}</div>
+                    </div>
                   </div>
                   
-                  <div className="stat-card">
-                    <div className="stat-icon">💰</div>
-                    <div className="stat-label">รายได้รวม</div>
-                    <div className="stat-value">
-                      ฿{stats.totalRevenue.toLocaleString()}
+                  <div className="stat-card stat-purple">
+                    <div className="stat-icon-wrapper stat-purple">💰</div>
+                    <div className="stat-content">
+                      <div className="stat-label">รายได้รวม</div>
+                      <div className="stat-value">
+                        ฿{stats.totalRevenue.toLocaleString()}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -231,6 +231,7 @@ function AdminDashboard() {
           </>
         )}
 
+        {/* Concerts Management Content */}
         {activeTab === 'concerts' && (
           <div className="card">
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
@@ -244,13 +245,7 @@ function AdminDashboard() {
             </div>
 
             {showCreateForm && (
-              <div style={{
-                border: '2px solid #10b981',
-                borderRadius: '8px',
-                padding: '20px',
-                marginBottom: '20px',
-                backgroundColor: '#f0fdf4'
-              }}>
+              <div className="create-form-container">
                 <h3 style={{marginTop: 0}}>สร้างคอนเสิร์ตใหม่</h3>
                 <CreateConcertForm
                   onSave={handleCreateConcert}
@@ -262,12 +257,7 @@ function AdminDashboard() {
             {stats ? (
               <>
                 {stats.concerts.map(concert => (
-                  <div key={concert.id} style={{
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '8px',
-                    padding: '20px',
-                    marginBottom: '16px'
-                  }}>
+                  <div key={concert.id} className="concert-item">
                     {editingConcert?.id === concert.id ? (
                       <EditConcertForm
                         concert={editingConcert}
@@ -277,24 +267,18 @@ function AdminDashboard() {
                     ) : (
                       <>
                         {concert.imageUrl && (
-                          <div style={{marginBottom: '16px'}}>
+                          <div className="concert-image-container">
                             <img 
                               src={concert.imageUrl} 
                               alt={concert.name}
-                              style={{
-                                width: '100%',
-                                maxHeight: '250px',
-                                objectFit: 'cover',
-                                borderRadius: '8px'
-                              }}
                               onError={(e) => {e.target.style.display = 'none'}}
                             />
                           </div>
                         )}
-                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '16px'}}>
-                          <div>
+                        <div className="concert-details">
+                          <div className="concert-info">
                             <h3>{concert.name}</h3>
-                            <p style={{color: '#6b7280', marginTop: '8px'}}>
+                            <p className="concert-meta">
                               รหัส: {concert.id} | 
                               บัตรทั้งหมด: {concert.totalTickets} | 
                               จองแล้ว: {concert.bookedTickets} | 
@@ -306,7 +290,7 @@ function AdminDashboard() {
                           </span>
                         </div>
 
-                        <div style={{display: 'flex', gap: '12px'}}>
+                        <div className="concert-actions">
                           <button
                             className="btn btn-secondary"
                             onClick={() => setEditingConcert({...concert, ...stats.concerts.find(c => c.id === concert.id)})}
@@ -333,10 +317,10 @@ function AdminDashboard() {
           </div>
         )}
 
+        {/* Reservations Content */}
         {activeTab === 'reservations' && (
           <div className="card">
             <h2 style={{marginBottom: '20px'}}>การจองทั้งหมด ({reservations.length} รายการ)</h2>
-            
             <div style={{overflowX: 'auto'}}>
               <table>
                 <thead>
@@ -385,6 +369,8 @@ function AdminDashboard() {
     </div>
   )
 }
+
+// ... (ส่วนประกอบ EditConcertForm และ CreateConcertForm ยังคงเหมือนเดิม สามารถคัดลอกส่วนท้ายของไฟล์เดิมมาต่อท้ายได้เลยครับ)
 
 function EditConcertForm({ concert, onSave, onCancel }) {
   const [formData, setFormData] = useState({

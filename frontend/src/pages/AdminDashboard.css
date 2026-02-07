@@ -1,0 +1,196 @@
+/* frontend/src/pages/AdminDashboard.css */
+
+/* Layout & Containers */
+.admin-header {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.admin-header h1 {
+  margin-bottom: 8px;
+  font-size: 24px;
+  color: #1f2937;
+}
+
+.admin-subtitle {
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Tabs Navigation */
+.admin-tabs {
+  display: flex;
+  gap: 12px;
+  background: white;
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.tab-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tab-btn.active {
+  background: #667eea;
+  color: white;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.tab-btn.inactive {
+  background: transparent;
+  color: #64748b;
+}
+
+.tab-btn.inactive:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+/* Dashboard Stats Grid (New Design) */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  background: white;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0,0,0,0.02);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Icon Wrapper Styling */
+.stat-icon-wrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+/* Color Variants */
+.stat-blue { background: #eff6ff; color: #3b82f6; }
+.stat-green { background: #f0fdf4; color: #22c55e; }
+.stat-orange { background: #fff7ed; color: #f97316; }
+.stat-purple { background: #faf5ff; color: #a855f7; }
+
+/* Content Styling */
+.stat-content {
+  flex-grow: 1;
+}
+
+.stat-label {
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  color: #1e293b;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+/* Decoration Circle */
+.stat-card::after {
+  content: '';
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.05;
+  pointer-events: none;
+}
+
+/* Create Form Container */
+.create-form-container {
+  border: 2px solid #10b981;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  background-color: #f0fdf4;
+}
+
+/* Concert Item Card */
+.concert-item {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  transition: box-shadow 0.2s;
+}
+
+.concert-item:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.concert-image-container img {
+  width: 100%;
+  max-height: 250px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.concert-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.concert-info h3 {
+  margin: 0 0 8px 0;
+  color: #1f2937;
+}
+
+.concert-meta {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.concert-actions {
+  display: flex;
+  gap: 12px;
+}
