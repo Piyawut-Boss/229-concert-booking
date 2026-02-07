@@ -516,14 +516,7 @@ function AdminDashboard() {
                           <div className="concert-actions">
                             <button
                               className="btn btn-secondary"
-                              onClick={() =>
-                                setEditingConcert({
-                                  ...concert,
-                                  ...stats.concerts.find(
-                                    (c) => c.id === concert.id,
-                                  ),
-                                })
-                              }
+                              onClick={() => setEditingConcert(concert)}
                             >
                               แก้ไขข้อมูล
                             </button>
@@ -612,15 +605,25 @@ function AdminDashboard() {
 }
 
 function EditConcertForm({ concert, onSave, onCancel }) {
+  const formatDateForInput = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
   const [formData, setFormData] = useState({
     name: concert?.name ?? "",
     artist: concert?.artist ?? "",
-    date: concert?.date ?? "",
+    date: formatDateForInput(concert?.date), 
     venue: concert?.venue ?? "",
     totalTickets: concert?.totalTickets ?? 0,
     price: concert?.price ?? 0,
     imageUrl: concert?.imageUrl ?? "",
   });
+
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
 
