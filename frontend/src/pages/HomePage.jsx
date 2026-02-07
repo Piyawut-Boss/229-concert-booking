@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import BookingModal from '../components/BookingModal'
+import './HomePage.css' // Import styles เฉพาะหน้า
 
 function HomePage() {
   const [concerts, setConcerts] = useState([])
@@ -10,7 +11,6 @@ function HomePage() {
 
   useEffect(() => {
     fetchConcerts()
-    // Auto refresh every 5 seconds
     const interval = setInterval(fetchConcerts, 5000)
     return () => clearInterval(interval)
   }, [])
@@ -18,23 +18,19 @@ function HomePage() {
   const fetchConcerts = async () => {
     try {
       const response = await axios.get('/api/concerts')
-      setConcerts(response.data)
+      // เรียงลำดับ: วันที่ใกล้สุดขึ้นก่อน
+      const sorted = response.data.sort((a, b) => new Date(a.date) - new Date(b.date))
+      setConcerts(sorted)
       setLoading(false)
     } catch (error) {
-      console.error('Error fetching concerts:', error)
+      console.error('Error:', error)
       setLoading(false)
     }
   }
 
   const handleBooking = (concert) => {
-    if (concert.status !== 'open') {
-      alert('การจองปิดแล้วสำหรับคอนเสิร์ตนี้')
-      return
-    }
-    if (concert.availableTickets <= 0) {
-      alert('บัตรหมดแล้ว')
-      return
-    }
+    if (concert.status !== 'open') return
+    if (concert.availableTickets <= 0) return
     setSelectedConcert(concert)
     setShowModal(true)
   }
@@ -44,111 +40,101 @@ function HomePage() {
     fetchConcerts()
   }
 
-  if (loading) {
-    return (
-      <div className="page-content">
-        <div className="container">
-          <div className="spinner"></div>
-        </div>
-      </div>
-    )
+  const formatDate = (dateString) => {
+    const date = new Date(dateString)
+    return {
+      date: date.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' }),
+      time: date.toLocaleDateString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+    }
   }
+
+  if (loading) return <div className="page-content"><div className="container"><div className="spinner"></div></div></div>
 
   return (
     <div className="page-content">
       <div className="container">
         <div className="page-header">
-          <h1>🎤 Concert Tickets</h1>
-          <p>จองบัตรคอนเสิร์ตที่คุณชื่นชอบได้แล้ววันนี้</p>
+          <h1>Upcoming Concerts</h1>
+          <p>จองบัตรคอนเสิร์ตศิลปินที่คุณชื่นชอบ</p>
         </div>
 
-        <div className="grid grid-2">
-          {concerts.map(concert => (
-            <div key={concert.id} className="concert-card">
-              <img 
-                src={concert.imageUrl} 
-                alt={concert.name}
-                className="concert-image"
-              />
-              <div className="concert-info">
-                <h2 className="concert-name">{concert.name}</h2>
-                <p className="concert-artist">🎵 {concert.artist}</p>
+        <div className="concert-list">
+          {concerts.map(concert => {
+            const { date, time } = formatDate(concert.date)
+            const isSoldOut = concert.availableTickets <= 0
+            const isClosed = concert.status !== 'open'
+
+            return (
+              <div key={concert.id} className={`ticket-card ${isSoldOut || isClosed ? 'disabled' : ''}`}>
                 
-                <div className="concert-detail">
-                  📅 {new Date(concert.date).toLocaleDateString('th-TH', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </div>
-                
-                <div className="concert-detail">
-                  📍 {concert.venue}
+                {/* Image Section */}
+                <div className="ticket-left">
+                  <img 
+                    src={concert.imageUrl} 
+                    alt={concert.name} 
+                    className="concert-poster"
+                    onError={(e) => {e.target.src = 'https://via.placeholder.com/300x200?text=No+Image'}}
+                  />
                 </div>
 
-                <div className="concert-price">
-                  ฿{concert.price.toLocaleString()}
-                </div>
-
-                <div className="concert-availability">
-                  <div className="availability-item">
-                    <div className="availability-label">ทั้งหมด</div>
-                    <div className="availability-value">{concert.totalTickets}</div>
-                  </div>
-                  <div className="availability-item">
-                    <div className="availability-label">จองแล้ว</div>
-                    <div className="availability-value">{concert.bookedTickets}</div>
-                  </div>
-                  <div className="availability-item">
-                    <div className="availability-label">คงเหลือ</div>
-                    <div className="availability-value" style={{
-                      color: concert.availableTickets > 0 ? '#10b981' : '#ef4444'
-                    }}>
-                      {concert.availableTickets}
+                {/* Info Section */}
+                <div className="ticket-right">
+                  <h2 className="concert-name">{concert.name}</h2>
+                  <p className="artist-name">{concert.artist}</p>
+                  
+                  <div className="meta-info">
+                    <div className="meta-item">
+                      <i className="far fa-calendar-alt"></i> {date} • {time}
+                    </div>
+                    <div className="meta-item">
+                      <i className="fas fa-map-marker-alt"></i> {concert.venue}
                     </div>
                   </div>
+
+                  <div className="ticket-stats">
+                    <div className="stat-item text-left">
+                      <span className="stat-label">Total</span>
+                      <span className="stat-value">{concert.totalTickets}</span>
+                    </div>
+                    <div className="stat-item text-center">
+                      <span className="stat-label">Booked</span>
+                      <span className="stat-value">{concert.bookedTickets}</span>
+                    </div>
+                    <div className="stat-item text-right">
+                      <span className="stat-label">Left</span>
+                      <span className={`stat-value ${concert.availableTickets < 20 ? 'text-danger' : 'text-success'}`}>
+                        {concert.availableTickets}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="ticket-divider-dashed"></div>
+
+                  <div className="ticket-action">
+                    <div className="price-tag">
+                      <span className="currency">฿</span>
+                      <span className="amount">{concert.price.toLocaleString()}</span>
+                    </div>
+
+                    {!isClosed && !isSoldOut ? (
+                      <button className="book-btn" onClick={() => handleBooking(concert)}>
+                        Buy Ticket
+                      </button>
+                    ) : (
+                      <button className="book-btn disabled" disabled>
+                        {isClosed ? 'Closed' : 'Sold Out'}
+                      </button>
+                    )}
+                  </div>
+                  
+                  {/* Notches for ticket effect */}
+                  <div className="notch notch-left"></div>
+                  <div className="notch notch-right"></div>
                 </div>
-
-                {concert.status === 'open' ? (
-                  concert.availableTickets > 0 ? (
-                    <button 
-                      className="btn btn-primary" 
-                      style={{width: '100%'}}
-                      onClick={() => handleBooking(concert)}
-                    >
-                      จองบัตร
-                    </button>
-                  ) : (
-                    <button 
-                      className="btn btn-secondary" 
-                      style={{width: '100%'}}
-                      disabled
-                    >
-                      บัตรหมดแล้ว
-                    </button>
-                  )
-                ) : (
-                  <button 
-                    className="btn btn-secondary" 
-                    style={{width: '100%'}}
-                    disabled
-                  >
-                    ปิดการจองแล้ว
-                  </button>
-                )}
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
-
-        {concerts.length === 0 && (
-          <div className="card" style={{textAlign: 'center', padding: '60px'}}>
-            <h2>ยังไม่มีคอนเสิร์ตในขณะนี้</h2>
-            <p style={{color: '#6b7280', marginTop: '12px'}}>
-              กรุณากลับมาตรวจสอบอีกครั้งในภายหลัง
-            </p>
-          </div>
-        )}
       </div>
 
       {showModal && (
