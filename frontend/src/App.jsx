@@ -1,15 +1,17 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
 import { GoogleOAuthProvider } from '@react-oauth/google'
+import { useState } from 'react'
 import HomePage from './pages/HomePage'
 import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
 import MyReservations from './pages/MyReservations'
-import GoogleLoginComponent from './components/GoogleLogin'
+import LoginModal from './components/LoginModal'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import './App.css'
 
 function AppContent() {
   const { user, logout } = useAuth()
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
 
   return (
       <div className="app">
@@ -28,9 +30,12 @@ function AppContent() {
                   <button className="btn-logout" onClick={logout}>Logout</button>
                 </div>
               ) : (
-                <div className="login-section">
-                  <GoogleLoginComponent />
-                </div>
+                <button 
+                  className="btn-login" 
+                  onClick={() => setIsLoginModalOpen(true)}
+                >
+                  Login
+                </button>
               )}
             </div>
           </div>
@@ -51,6 +56,11 @@ function AppContent() {
             </p>
           </div>
         </footer>
+
+        <LoginModal 
+          isOpen={isLoginModalOpen} 
+          onClose={() => setIsLoginModalOpen(false)}
+        />
       </div>
     )
   }

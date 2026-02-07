@@ -3,7 +3,7 @@ import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
 import './GoogleLogin.css'
 
-function GoogleLoginComponent() {
+function GoogleLoginComponent({ onLoginSuccess }) {
   const { login } = useAuth()
 
   const handleLoginSuccess = async (credentialResponse) => {
@@ -48,6 +48,11 @@ function GoogleLoginComponent() {
       } catch (error) {
         console.warn('⚠️ Could not send login notification:', error.message)
         // Don't fail the login if email sending fails
+      }
+
+      // Close modal after successful login
+      if (onLoginSuccess) {
+        onLoginSuccess()
       }
     } catch (error) {
       console.error('Error decoding token:', error)

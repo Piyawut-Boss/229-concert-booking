@@ -1,0 +1,294 @@
+/* Login Modal Backdrop */
+.login-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.95) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Login Modal Container */
+.login-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1001;
+  animation: modalPopIn 0.4s cubic-bezier(0.23, 1, 0.320, 1);
+}
+
+/* Modal Content */
+.login-modal-content {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 50%, #f0f4ff 100%);
+  border-radius: 24px;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35), 
+              0 0 1px rgba(0, 0, 0, 0.1),
+              inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  width: 100%;
+  max-width: 520px;
+  padding: 60px 50px;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+}
+
+/* Decorative elements */
+.modal-decoration {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+.modal-decoration.top-left {
+  width: 300px;
+  height: 300px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  top: -100px;
+  left: -100px;
+}
+
+.modal-decoration.bottom-right {
+  width: 250px;
+  height: 250px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  bottom: -80px;
+  right: -80px;
+}
+
+/* Close Button */
+.login-modal-close {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  font-size: 24px;
+  color: #667eea;
+  cursor: pointer;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  z-index: 10;
+}
+
+.login-modal-close:hover {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+  color: #764ba2;
+  transform: scale(1.1) rotate(90deg);
+  border-color: rgba(102, 126, 234, 0.4);
+}
+
+/* Modal Header */
+.login-modal-header {
+  text-align: center;
+  margin-bottom: 48px;
+  position: relative;
+  z-index: 1;
+}
+
+.header-icon {
+  font-size: 56px;
+  margin-bottom: 16px;
+  display: block;
+  animation: float 3s ease-in-out infinite;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 42px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 12px;
+  letter-spacing: -1px;
+}
+
+.modal-subtitle {
+  margin: 0;
+  font-size: 16px;
+  color: #64748b;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+/* Modal Body */
+.login-modal-body {
+  margin-bottom: 40px;
+  position: relative;
+  z-index: 1;
+}
+
+.login-option-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+  text-align: center;
+  opacity: 0.7;
+}
+
+.google-login-container {
+  display: flex;
+  justify-content: center;
+  transform: scale(1.08);
+}
+
+/* Divider */
+.login-modal-divider {
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(102, 126, 234, 0.3) 50%, 
+    transparent 100%);
+  margin: 32px 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* Modal Footer */
+.login-modal-footer {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.footer-text {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #1e293b;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.footer-subtext {
+  margin: 0;
+  font-size: 13px;
+  color: #94a3b8;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalPopIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .login-modal-content {
+    max-width: 90%;
+    padding: 48px 32px;
+    margin: 0 20px;
+  }
+
+  .modal-title {
+    font-size: 36px;
+  }
+
+  .modal-subtitle {
+    font-size: 15px;
+  }
+
+  .header-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+
+  .login-modal-close {
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+    top: 20px;
+    right: 20px;
+  }
+
+  .login-modal-body {
+    margin-bottom: 32px;
+  }
+
+  .google-login-container {
+    transform: scale(1);
+  }
+
+  .modal-decoration {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-modal-content {
+    max-width: 95%;
+    padding: 40px 24px;
+  }
+
+  .modal-title {
+    font-size: 32px;
+  }
+
+  .modal-subtitle {
+    font-size: 14px;
+  }
+
+  .header-icon {
+    font-size: 44px;
+  }
+
+  .login-modal-close {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  .login-option-label {
+    font-size: 12px;
+  }
+
+  .footer-text {
+    font-size: 13px;
+  }
+
+  .footer-subtext {
+    font-size: 12px;
+  }
+}
