@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import GoogleLoginComponent from './GoogleLogin'
 import './LoginModal.css'
 import { FaTimes } from 'react-icons/fa'
-import HCaptcha from '@hcaptcha/react-hcaptcha'
+import Turnstile from 'react-turnstile'
 
 function LoginModal({ isOpen, onClose }) {
   const captchaRef = useRef(null)
@@ -12,6 +12,11 @@ function LoginModal({ isOpen, onClose }) {
   const handleCaptchaChange = (token) => {
     setCaptchaToken(token)
     setCaptchaError(false)
+  }
+
+  const handleCaptchaError = () => {
+    setCaptchaToken(null)
+    setCaptchaError(true)
   }
 
   const handleCaptchaExpire = () => {
@@ -49,17 +54,18 @@ function LoginModal({ isOpen, onClose }) {
           <div className="login-modal-body">
             <div className="login-option-label">กรุณาเลือกวิธีการล็อกอิน</div>
             
-            {/* hCaptcha Widget */}
+            {/* Cloudflare Turnstile Widget */}
             <div className="captcha-container">
-              <HCaptcha
+              <Turnstile
                 ref={captchaRef}
-                sitekey={import.meta.env.VITE_HCAPTCHA_SITE_KEY}
+                sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
                 onVerify={handleCaptchaChange}
+                onError={handleCaptchaError}
                 onExpire={handleCaptchaExpire}
                 theme="light"
               />
               {captchaError && (
-                <p className="captcha-error">กรุณายืนยันการตรวจสอบ hCaptcha อีกครั้ง</p>
+                <p className="captcha-error">กรุณายืนยันการตรวจสอบ Cloudflare อีกครั้ง</p>
               )}
             </div>
 
