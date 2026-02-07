@@ -1,7 +1,13 @@
 /* frontend/src/pages/AdminDashboard.css */
 
+/* --- Scope ทุกอย่างให้อยู่ภายใต้ .admin-dashboard-page --- */
+
+.admin-dashboard-page {
+  color: #1f2937; /* ตั้งค่าสีตัวอักษรหลักเป็นสีเข้ม */
+}
+
 /* Layout & Containers */
-.admin-header {
+.admin-dashboard-page .admin-header {
   background: white;
   border-radius: 12px;
   padding: 24px;
@@ -12,19 +18,19 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-.admin-header h1 {
+.admin-dashboard-page .admin-header h1 {
   margin-bottom: 8px;
   font-size: 24px;
-  color: #1f2937;
+  color: #1f2937 !important; /* บังคับใช้สีนี้ */
 }
 
-.admin-subtitle {
+.admin-dashboard-page .admin-subtitle {
   color: #6b7280;
   margin: 0;
 }
 
 /* Tabs Navigation */
-.admin-tabs {
+.admin-dashboard-page .admin-tabs {
   display: flex;
   gap: 12px;
   background: white;
@@ -34,7 +40,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.tab-btn {
+.admin-dashboard-page .tab-btn {
   padding: 10px 20px;
   border: none;
   border-radius: 8px;
@@ -44,33 +50,34 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  font-family: inherit;
 }
 
-.tab-btn.active {
+.admin-dashboard-page .tab-btn.active {
   background: #667eea;
   color: white;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
-.tab-btn.inactive {
+.admin-dashboard-page .tab-btn.inactive {
   background: transparent;
   color: #64748b;
 }
 
-.tab-btn.inactive:hover {
+.admin-dashboard-page .tab-btn.inactive:hover {
   background: #f1f5f9;
   color: #334155;
 }
 
-/* Dashboard Stats Grid (New Design) */
-.stats-grid {
+/* Dashboard Stats Grid */
+.admin-dashboard-page .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 24px;
   margin-bottom: 30px;
 }
 
-.stat-card {
+.admin-dashboard-page .stat-card {
   background: white;
   padding: 24px;
   border-radius: 16px;
@@ -82,15 +89,16 @@
   border: 1px solid rgba(0,0,0,0.02);
   position: relative;
   overflow: hidden;
+  color: #1f2937; /* บังคับสีตัวอักษรใน Card */
 }
 
-.stat-card:hover {
+.admin-dashboard-page .stat-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 /* Icon Wrapper Styling */
-.stat-icon-wrapper {
+.admin-dashboard-page .stat-icon-wrapper {
   width: 64px;
   height: 64px;
   border-radius: 16px;
@@ -102,17 +110,17 @@
 }
 
 /* Color Variants */
-.stat-blue { background: #eff6ff; color: #3b82f6; }
-.stat-green { background: #f0fdf4; color: #22c55e; }
-.stat-orange { background: #fff7ed; color: #f97316; }
-.stat-purple { background: #faf5ff; color: #a855f7; }
+.admin-dashboard-page .stat-blue { background: #eff6ff; color: #3b82f6; }
+.admin-dashboard-page .stat-green { background: #f0fdf4; color: #22c55e; }
+.admin-dashboard-page .stat-orange { background: #fff7ed; color: #f97316; }
+.admin-dashboard-page .stat-purple { background: #faf5ff; color: #a855f7; }
 
 /* Content Styling */
-.stat-content {
+.admin-dashboard-page .stat-content {
   flex-grow: 1;
 }
 
-.stat-label {
+.admin-dashboard-page .stat-label {
   color: #64748b;
   font-size: 14px;
   font-weight: 600;
@@ -121,51 +129,39 @@
   letter-spacing: 0.5px;
 }
 
-.stat-value {
+.admin-dashboard-page .stat-value {
   color: #1e293b;
   font-size: 28px;
   font-weight: 800;
   line-height: 1.2;
 }
 
-/* Decoration Circle */
-.stat-card::after {
-  content: '';
-  position: absolute;
-  top: -20px;
-  right: -20px;
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  background: currentColor;
-  opacity: 0.05;
-  pointer-events: none;
-}
-
 /* Create Form Container */
-.create-form-container {
+.admin-dashboard-page .create-form-container {
   border: 2px solid #10b981;
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
   background-color: #f0fdf4;
+  color: #1f2937;
 }
 
 /* Concert Item Card */
-.concert-item {
+.admin-dashboard-page .concert-item {
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 20px;
   transition: box-shadow 0.2s;
+  color: #1f2937;
 }
 
-.concert-item:hover {
+.admin-dashboard-page .concert-item:hover {
   box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
-.concert-image-container img {
+.admin-dashboard-page .concert-image-container img {
   width: 100%;
   max-height: 250px;
   object-fit: cover;
@@ -173,43 +169,44 @@
   margin-bottom: 16px;
 }
 
-.concert-details {
+.admin-dashboard-page .concert-details {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 16px;
 }
 
-.concert-info h3 {
+.admin-dashboard-page .concert-info h3 {
   margin: 0 0 8px 0;
   color: #1f2937;
 }
 
-.concert-meta {
+.admin-dashboard-page .concert-meta {
   color: #6b7280;
   font-size: 14px;
 }
 
-.concert-actions {
+.admin-dashboard-page .concert-actions {
   display: flex;
   gap: 12px;
 }
 
 /* Modern Table Styles */
-.table-container {
+.admin-dashboard-page .table-container {
   overflow-x: auto;
   border-radius: 12px;
   border: 1px solid #f1f5f9;
+  background: white; /* ใส่พื้นหลังขาวให้ตาราง */
 }
 
-.modern-table {
+.admin-dashboard-page .modern-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   min-width: 800px;
 }
 
-.modern-table thead th {
+.admin-dashboard-page .modern-table thead th {
   background: #f8fafc;
   color: #64748b;
   font-weight: 600;
@@ -221,62 +218,99 @@
   border-bottom: 2px solid #e2e8f0;
 }
 
-.modern-table tbody tr {
+.admin-dashboard-page .modern-table tbody tr {
   transition: all 0.2s;
+  background-color: white; /* บังคับพื้นหลังขาว */
 }
 
-.modern-table tbody tr:hover {
+.admin-dashboard-page .modern-table tbody tr:hover {
   background-color: #f8fafc;
 }
 
-.modern-table td {
+.admin-dashboard-page .modern-table td {
   padding: 16px 24px;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
-  color: #334155;
+  color: #334155; /* สีตัวอักษรทั่วไปในตาราง */
   font-size: 14px;
 }
 
-.modern-table tbody tr:last-child td {
+.admin-dashboard-page .modern-table tbody tr:last-child td {
   border-bottom: none;
 }
 
 /* Table Specific Components */
-.concert-cell {
+.admin-dashboard-page .concert-cell {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-.concert-thumb {
-  width: 50px;
-  height: 50px;
+.admin-dashboard-page .concert-thumb {
+  width: 200px;
+  height: 260px;
   border-radius: 8px;
   object-fit: cover;
   background-color: #f1f5f9;
   border: 1px solid #e2e8f0;
 }
 
-.concert-info-mini {
+.admin-dashboard-page .concert-info-mini {
   display: flex;
-  flex-direction: column;
+  flex-direction: column;       
+  justify-content: center;   
+  align-items: flex-start; 
+  align-items: center; 
+  text-align: center;
+  gap: 4px;                     
+  min-height: 80px;             
 }
 
-.concert-name {
-  font-weight: 600;
-  color: #1e293b; /* แก้เป็นสีเข้มให้มองเห็นชัดเจน */
-  margin-bottom: 2px;
-  font-size: 15px;
+.admin-dashboard-page .concert-name {
+  font-weight: 700;
+  color: #1e293b !important;
+  font-size: 16px;
+  line-height: 1.4;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-decoration: none;
+  text-align: center;
 }
 
-.concert-artist {
-  font-size: 13px;
+.admin-dashboard-page .concert-artist {
+  font-size: 14px;              /* ขยายให้อ่านง่ายขึ้น */
   color: #64748b;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.revenue-text {
+.admin-dashboard-page .revenue-text {
   font-family: 'Courier New', monospace;
   font-weight: 600;
   color: #1e293b;
   font-size: 15px;
+}
+
+/* Input Styles (เผื่อโดน Global CSS กวน) */
+.admin-dashboard-page input[type="text"],
+.admin-dashboard-page input[type="number"],
+.admin-dashboard-page input[type="date"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background-color: white;
+  color: #1f2937;
+}
+
+.admin-dashboard-page label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #374151;
 }

@@ -139,7 +139,7 @@ function AdminDashboard() {
   }
 
   return (
-    <div className="page-content">
+    <div className="page-content admin-dashboard-page">
       <div className="container">
         {/* Header Section */}
         <div className="admin-header">
@@ -259,8 +259,6 @@ function AdminDashboard() {
                                     style={{
                                       display: "block",
                                       objectFit: "cover",
-                                      width: "50px",
-                                      height: "50px",
                                       borderRadius: "8px",
                                     }}
                                     onError={(e) => {
