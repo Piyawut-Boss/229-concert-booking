@@ -3,6 +3,9 @@ const express = require('express');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
 const { OAuth2Client } = require('google-auth-library');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const emailService = require('./services/emailService');
 
 // Use production database config for production environment
@@ -17,9 +20,55 @@ const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '1234567890-abcdefghijk
 // Initialize Google OAuth Client
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
+// ========== File Upload Configuration ==========
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    // Generate unique filename: timestamp-uuid.ext
+    const ext = path.extname(file.originalname);
+    const name = `${Date.now()}-${uuidv4()}${ext}`;
+    cb(null, name);
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|webp/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
+  }
+});
+
 // Middleware
 app.use(cors());
-app.use(express.json());
+
+// JSON parser - skip for multipart/form-data requests
+app.use((req, res, next) => {
+  if (req.is('multipart/form-data')) {
+    // Skip JSON parsing for multipart requests
+    next();
+  } else {
+    express.json()(req, res, next);
+  }
+});
+
+// Serve uploaded files as static assets
+app.use('/uploads', express.static(uploadsDir));
 
 // ========== Database Lock Mechanism ==========
 // Using in-memory locks for distributed concurrency control
@@ -97,6 +146,25 @@ async function requireGoogleAuth(req, res, next) {
 // Health Check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString(), database: 'PostgreSQL' });
+});
+
+// File Upload Endpoint
+app.post('/api/upload', upload.single('file'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  const fileUrl = `/uploads/${req.file.filename}`;
+  console.log(`[UPLOAD] File uploaded: ${req.file.filename} -> ${fileUrl}`);
+
+  res.json({
+    success: true,
+    filename: req.file.filename,
+    originalName: req.file.originalname,
+    size: req.file.size,
+    url: fileUrl,
+    relativePath: fileUrl
+  });
 });
 
 // Google Authentication Verification
@@ -563,7 +631,7 @@ app.get('/api/admin/stats', async (req, res) => {
 // Admin: Update concert
 app.put('/api/admin/concerts/:id', async (req, res) => {
   const { id } = req.params;
-  const { name, artist, date, venue, price, status, totalTickets } = req.body;
+  const { name, artist, date, venue, price, status, totalTickets, imageUrl } = req.body;
 
   // Validate concert ID
   if (!id || isNaN(parseInt(id))) {
@@ -640,6 +708,10 @@ app.put('/api/admin/concerts/:id', async (req, res) => {
       params.push(totalTickets);
       updates.push(`available_tickets = $${paramIndex++}`);
       params.push(newAvailableTickets);
+    }
+    if (imageUrl) {
+      updates.push(`image_url = $${paramIndex++}`);
+      params.push(imageUrl);
     }
 
     // Always update timestamp

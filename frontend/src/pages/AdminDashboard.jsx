@@ -276,6 +276,21 @@ function AdminDashboard() {
                       />
                     ) : (
                       <>
+                        {concert.imageUrl && (
+                          <div style={{marginBottom: '16px'}}>
+                            <img 
+                              src={concert.imageUrl} 
+                              alt={concert.name}
+                              style={{
+                                width: '100%',
+                                maxHeight: '250px',
+                                objectFit: 'cover',
+                                borderRadius: '8px'
+                              }}
+                              onError={(e) => {e.target.style.display = 'none'}}
+                            />
+                          </div>
+                        )}
                         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '16px'}}>
                           <div>
                             <h3>{concert.name}</h3>
@@ -378,9 +393,32 @@ function EditConcertForm({ concert, onSave, onCancel }) {
     date: concert?.date ?? '',
     venue: concert?.venue ?? '',
     totalTickets: concert?.totalTickets ?? 0,
-    price: concert?.price ?? 0
+    price: concert?.price ?? 0,
+    imageUrl: concert?.imageUrl ?? ''
   })
   const [error, setError] = useState('')
+  const [uploading, setUploading] = useState(false)
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    const formDataObj = new FormData()
+    formDataObj.append('file', file)
+
+    try {
+      const response = await axios.post('/api/upload', formDataObj, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      setFormData({...formData, imageUrl: response.data.url})
+      setError('')
+    } catch (err) {
+      setError('ไม่สามารถอัพโหลดไฟล์: ' + (err.response?.data?.error || err.message))
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -418,6 +456,7 @@ function EditConcertForm({ concert, onSave, onCancel }) {
     if (formData.venue !== concert.venue) updates.venue = formData.venue
     if (formData.totalTickets !== concert.totalTickets) updates.totalTickets = formData.totalTickets
     if (formData.price !== concert.price) updates.price = formData.price
+    if (formData.imageUrl !== concert.imageUrl) updates.imageUrl = formData.imageUrl
 
     if (Object.keys(updates).length === 0) {
       setError('ไม่มีการเปลี่ยนแปลงข้อมูล')
@@ -498,6 +537,34 @@ function EditConcertForm({ concert, onSave, onCancel }) {
             min={0}
           />
         </div>
+
+        <div className="input-group" style={{gridColumn: '1 / -1'}}>
+          <label>📤 อัพโหลดรูปภาพ</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileUpload}
+            disabled={uploading}
+            style={{padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px', cursor: uploading ? 'not-allowed' : 'pointer'}}
+          />
+          {uploading && <small style={{color: '#3b82f6'}}>⏳ กำลังอัพโหลด...</small>}
+        </div>
+
+        <div className="input-group" style={{gridColumn: '1 / -1'}}>
+          <label>หรือ ใส่ URL รูปภาพ</label>
+          <input
+            type="text"
+            value={formData.imageUrl}
+            onChange={(e) => {setFormData({...formData, imageUrl: e.target.value}); setError('')}}
+            placeholder="https://example.com/concert-image.jpg"
+          />
+        </div>
+
+        {formData.imageUrl && (
+          <div style={{gridColumn: '1 / -1', marginTop: '-8px'}}>
+            <img src={formData.imageUrl} alt="Preview" style={{maxWidth: '100%', maxHeight: '200px', borderRadius: '4px', objectFit: 'cover'}} onError={(e) => {e.target.style.display = 'none'}} />
+          </div>
+        )}
       </div>
 
       <div style={{display: 'flex', gap: '12px'}}>
@@ -517,10 +584,33 @@ function CreateConcertForm({ onSave, onCancel }) {
     date: '',
     venue: '',
     totalTickets: 100,
-    price: 0
+    price: 0,
+    imageUrl: ''
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    const formDataObj = new FormData()
+    formDataObj.append('file', file)
+
+    try {
+      const response = await axios.post('/api/upload', formDataObj, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      setFormData({...formData, imageUrl: response.data.url})
+      setError('')
+    } catch (err) {
+      setError('ไม่สามารถอัพโหลดไฟล์: ' + (err.response?.data?.error || err.message))
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -548,6 +638,10 @@ function CreateConcertForm({ onSave, onCancel }) {
     }
     if (formData.price < 0) {
       setError('ราคาไม่สามารถติดลบได้')
+      return
+    }
+    if (!formData.imageUrl) {
+      setError('กรุณาอัพโหลดหรือใส่ URL รูปภาพ')
       return
     }
 
@@ -630,10 +724,39 @@ function CreateConcertForm({ onSave, onCancel }) {
             required
           />
         </div>
+
+        <div className="input-group" style={{gridColumn: '1 / -1'}}>
+          <label>📤 อัพโหลดรูปภาพ *</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileUpload}
+            disabled={uploading}
+            style={{padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px', cursor: uploading ? 'not-allowed' : 'pointer'}}
+            required={!formData.imageUrl}
+          />
+          {uploading && <small style={{color: '#3b82f6'}}>⏳ กำลังอัพโหลด...</small>}
+        </div>
+
+        <div className="input-group" style={{gridColumn: '1 / -1'}}>
+          <label>หรือ ใส่ URL รูปภาพ</label>
+          <input
+            type="text"
+            value={formData.imageUrl}
+            onChange={(e) => {setFormData({...formData, imageUrl: e.target.value}); setError('')}}
+            placeholder="https://example.com/concert-image.jpg"
+          />
+        </div>
+
+        {formData.imageUrl && (
+          <div style={{gridColumn: '1 / -1', marginTop: '-8px'}}>
+            <img src={formData.imageUrl} alt="Preview" style={{maxWidth: '100%', maxHeight: '200px', borderRadius: '4px', objectFit: 'cover'}} onError={(e) => {e.target.style.display = 'none'}} />
+          </div>
+        )}
       </div>
 
       <div style={{display: 'flex', gap: '12px'}}>
-        <button type="submit" className="btn btn-success" disabled={loading}>
+        <button type="submit" className="btn btn-success" disabled={loading || uploading}>
           {loading ? '⏳ กำลังสร้าง...' : '✅ สร้างคอนเสิร์ต'}
         </button>
         <button type="button" className="btn btn-secondary" onClick={onCancel}>
