@@ -1,11 +1,10 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import GoogleLoginComponent from './GoogleLogin'
 import './LoginModal.css'
 import { FaTimes } from 'react-icons/fa'
 import Turnstile from 'react-turnstile'
 
 function LoginModal({ isOpen, onClose }) {
-  const captchaRef = useRef(null)
   const [captchaToken, setCaptchaToken] = useState(null)
   const [captchaError, setCaptchaError] = useState(false)
 
@@ -21,7 +20,6 @@ function LoginModal({ isOpen, onClose }) {
 
   const handleCaptchaExpire = () => {
     setCaptchaToken(null)
-    setCaptchaError(true)
   }
 
   if (!isOpen) return null
@@ -57,7 +55,6 @@ function LoginModal({ isOpen, onClose }) {
             {/* Cloudflare Turnstile Widget */}
             <div className="captcha-container">
               <Turnstile
-                ref={captchaRef}
                 sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
                 onVerify={handleCaptchaChange}
                 onError={handleCaptchaError}
