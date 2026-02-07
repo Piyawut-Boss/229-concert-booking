@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import BookingModal from "../components/BookingModal";
 import "./HomePage.css";
+import { FaCalendarAlt, FaMapMarkerAlt } from "react-icons/fa";
 
 function HomePage() {
   const [concerts, setConcerts] = useState([]);
@@ -34,9 +35,6 @@ function HomePage() {
       setLoading(false);
     }
   };
-
-  // ... (Logic Infinite Scroll & Update Metrics เดิม) ...
-  // ... (Copy Logic จากคำตอบก่อนหน้ามาใส่ตรงนี้ได้เลย) ...
 
   const originalRecommended = concerts.slice(0, 5);
   const infiniteConcerts = [
@@ -107,20 +105,14 @@ function HomePage() {
     return {
       date: date.toLocaleDateString("th-TH", {
         day: "numeric",
-        month: "long",
-        year: "numeric",
-      }),
-      time: date.toLocaleDateString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
+        month: "short",
+        year: "2-digit",
       }),
     };
   };
 
-  // --- 1. Render Card แบบแนวตั้ง (สำหรับ Slider) ---
   const renderConcertCard = (concert, index) => {
-    const { date, time } = formatDate(concert.date);
+    const { date } = formatDate(concert.date);
     const isSoldOut = concert.availableTickets <= 0;
     const isClosed = concert.status !== "open";
 
@@ -140,39 +132,50 @@ function HomePage() {
             }}
           />
         </div>
+
         <div className="ticket-right">
           <h2 className="concert-name">{concert.name}</h2>
           <p className="artist-name">{concert.artist}</p>
+
           <div className="meta-info">
             <div className="meta-item">
-              <span>
-                📅 {date} • {time}
-              </span>
+              {/* เปลี่ยน Emoji เป็นไอคอน */}
+              <FaCalendarAlt className="icon-calendar" />
+              <span>{date}</span>
             </div>
             <div className="meta-item">
-              <span>📍 {concert.venue}</span>
+              {/* เปลี่ยน Emoji เป็นไอคอน */}
+              <FaMapMarkerAlt className="icon-location" />
+              <span>{concert.venue}</span>
             </div>
           </div>
+
           <div className="ticket-action">
-            {/* ... (รายละเอียดเดิม) ... */}
             <div className="price-tag">
-              <span className="amount">฿{concert.price.toLocaleString()}</span>
+              <span className="currency">฿</span>
+              <span className="amount">{concert.price.toLocaleString()}</span>
             </div>
-            <button
-              className={`book-btn ${isClosed || isSoldOut ? "disabled" : ""}`}
-              onClick={() => handleBooking(concert)}
-            >
-              {isClosed ? "Closed" : isSoldOut ? "Sold Out" : "Buy Ticket"}
-            </button>
+
+            {!isClosed && !isSoldOut ? (
+              <button
+                className="book-btn"
+                onClick={() => handleBooking(concert)}
+              >
+                Buy Ticket
+              </button>
+            ) : (
+              <button className="book-btn disabled" disabled>
+                {isClosed ? "Closed" : "Sold Out"}
+              </button>
+            )}
           </div>
         </div>
       </div>
     );
   };
 
-  // --- 2. Render Card แบบแนวนอน (สำหรับ All Concerts List) ---
   const renderHorizontalConcertCard = (concert) => {
-    const { date, time } = formatDate(concert.date);
+    const { date } = formatDate(concert.date);
     const isSoldOut = concert.availableTickets <= 0;
     const isClosed = concert.status !== "open";
 
@@ -181,7 +184,6 @@ function HomePage() {
         key={concert.id}
         className={`horizontal-card ${isSoldOut || isClosed ? "disabled" : ""}`}
       >
-        {/* รูปด้านซ้าย (มี Padding รอบๆ จาก CSS .horizontal-card) */}
         <div className="horizontal-left">
           <img
             src={concert.imageUrl}
@@ -194,31 +196,21 @@ function HomePage() {
           />
         </div>
 
-        {/* รายละเอียดด้านขวา */}
         <div className="horizontal-right">
           <div className="horizontal-info">
             <h3>{concert.name}</h3>
 
-            {/* วันที่ */}
             <div className="hz-meta-item">
-              <i className="far fa-calendar-alt icon-calendar"></i>
+              <FaCalendarAlt className="icon-calendar" />
               <span>{date}</span>
             </div>
 
-            {/* เวลา */}
             <div className="hz-meta-item">
-              <i className="far fa-clock icon-time"></i>
-              <span>{time} น.</span>
-            </div>
-
-            {/* สถานที่ */}
-            <div className="hz-meta-item">
-              <i className="fas fa-map-marker-alt icon-location"></i>
+              <FaMapMarkerAlt className="icon-location" />
               <span>{concert.venue}</span>
             </div>
           </div>
 
-          {/* เส้นประคั่น (ถ้าต้องการให้เหมือนเป๊ะ) */}
           <div className="horizontal-divider"></div>
 
           <div className="horizontal-action">
@@ -250,7 +242,6 @@ function HomePage() {
   return (
     <div className="page-content">
       <div className="container">
-        {/* --- Slider Section (ใช้ Card แนวตั้ง) --- */}
         <section className="recommend-section">
           <div className="section-header">
             <h2 className="section-title">Recommended for You</h2>
@@ -298,14 +289,10 @@ function HomePage() {
           </div>
         </section>
 
-        {/* --- Grid Section (ใช้ Card แนวนอน) --- */}
         <section className="all-concerts-section">
           <h2 className="section-title">All Concerts</h2>
           <div className="concert-list">
-            {concerts.map((concert) =>
-              // เรียกใช้ฟังก์ชัน Render แบบใหม่
-              renderHorizontalConcertCard(concert),
-            )}
+            {concerts.map((concert) => renderHorizontalConcertCard(concert))}
           </div>
         </section>
       </div>
