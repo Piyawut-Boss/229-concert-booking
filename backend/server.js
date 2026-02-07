@@ -809,7 +809,7 @@ app.delete('/api/admin/reservations/:id', async (req, res) => {
 
       // Update reservation status to cancelled
       const resUpdate = await db.query(
-        'UPDATE reservations SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
+        'UPDATE reservations SET status = $1 WHERE id = $2 RETURNING *',
         ['cancelled', id]
       );
 
