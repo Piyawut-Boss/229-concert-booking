@@ -1,8 +1,24 @@
+import { useRef, useState } from 'react'
 import GoogleLoginComponent from './GoogleLogin'
 import './LoginModal.css'
 import { FaTimes } from 'react-icons/fa'
+import HCaptcha from '@hcaptcha/react-hcaptcha'
 
 function LoginModal({ isOpen, onClose }) {
+  const captchaRef = useRef(null)
+  const [captchaToken, setCaptchaToken] = useState(null)
+  const [captchaError, setCaptchaError] = useState(false)
+
+  const handleCaptchaChange = (token) => {
+    setCaptchaToken(token)
+    setCaptchaError(false)
+  }
+
+  const handleCaptchaExpire = () => {
+    setCaptchaToken(null)
+    setCaptchaError(true)
+  }
+
   if (!isOpen) return null
 
   return (
@@ -32,7 +48,25 @@ function LoginModal({ isOpen, onClose }) {
           {/* Body Section */}
           <div className="login-modal-body">
             <div className="login-option-label">กรุณาเลือกวิธีการล็อกอิน</div>
-            <GoogleLoginComponent onLoginSuccess={onClose} />
+            
+            {/* hCaptcha Widget */}
+            <div className="captcha-container">
+              <HCaptcha
+                ref={captchaRef}
+                sitekey={import.meta.env.VITE_HCAPTCHA_SITE_KEY}
+                onVerify={handleCaptchaChange}
+                onExpire={handleCaptchaExpire}
+                theme="light"
+              />
+              {captchaError && (
+                <p className="captcha-error">กรุณายืนยันการตรวจสอบ hCaptcha อีกครั้ง</p>
+              )}
+            </div>
+
+            {/* Google Login - Only available if captcha verified */}
+            <div className={captchaToken ? '' : 'login-disabled'}>
+              <GoogleLoginComponent onLoginSuccess={onClose} />
+            </div>
           </div>
 
           {/* Divider */}

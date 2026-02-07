@@ -291,4 +291,49 @@
   .footer-subtext {
     font-size: 12px;
   }
+
+  /* hCaptcha responsive */
+  .captcha-container {
+    transform: scale(0.75);
+    transform-origin: top left;
+    margin-bottom: -20px;
+  }
 }
+
+/* hCaptcha Widget Styles */
+.captcha-container {
+  display: flex;
+  justify-content: center;
+  margin: 24px 0;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 12px;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.captcha-container iframe {
+  border-radius: 8px;
+}
+
+.captcha-error {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 8px;
+  text-align: center;
+  animation: shake 0.3s ease-in-out;
+}
+
+.login-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.login-disabled:hover {
+  opacity: 0.5;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
