@@ -1,5 +1,6 @@
 FROM node:18-alpine
 
+# Force rebuild - 2026-02-09 CORS Fix
 WORKDIR /app
 
 # Copy package files

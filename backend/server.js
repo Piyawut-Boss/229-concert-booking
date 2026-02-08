@@ -57,6 +57,7 @@ const upload = multer({
   }
 });
 
+// ========== CORS FIX v4 - FORCE RESTART ==========
 // Middleware
 const allowedOrigins = [
   'https://exemplary-warmth-production-9820.up.railway.app',
@@ -79,6 +80,8 @@ app.use(cors({
 }));
 
 app.options('*', cors());
+
+console.log('✅ CORS Middleware loaded - Allowed Origins:', allowedOrigins);
 
 // Serve uploaded files as static assets
 app.use('/uploads', express.static(uploadsDir));
