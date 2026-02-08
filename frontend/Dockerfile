@@ -28,9 +28,6 @@ FROM nginx:alpine
 # Copy built files to nginx
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Verify assets are present
-RUN ls -la /usr/share/nginx/html/assets/ || echo "Assets folder created"
-
 # Copy nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
