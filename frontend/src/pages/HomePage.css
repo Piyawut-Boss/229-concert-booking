@@ -98,7 +98,7 @@
 
 .artist-name {
     color: #666;
-    font-size: 0.85rem; /* ลดจาก 0.9rem */
+    font-size: 0.85rem;
     margin: 0;
 }
 
@@ -159,11 +159,7 @@
     height: 24px;
     background-color: var(--bg-color, #f8fafc); /* สีต้องตรงกับพื้นหลังเว็บ */
     border-radius: 50%;
-    
-    /* จัดตำแหน่ง: 
-       -28px มาจาก: Padding ของ Card (16px) + รัศมีวงกลม (12px) 
-       เพื่อให้จุดศูนย์กลางวงกลมอยู่ที่ขอบการ์ดพอดี 
-    */
+
     left: -28px; 
     
     /* เพิ่มเงาด้านในให้ดูมีมิติ (Optional) */
@@ -548,12 +544,11 @@
 
 .hz-meta-item .icon-calendar,
 .hz-meta-item .icon-location {
-  width: 12px; 
-  height: 12px;
+    width: 12px; 
+    height: 12px;
+    color: #dc2626; /* เปลี่ยนไอคอนเป็นสีแดง */
+    opacity: 0.8;
 }
-
-.icon-calendar { color: #000000; /* สีเขียว */ }
-.icon-location { color: #000000; /* สีฟ้า */ }
 
 /* เส้นประคั่นก่อนถึงปุ่ม (ถ้าต้องการ) */
 .horizontal-divider {
@@ -566,42 +561,73 @@
 .horizontal-action {
   margin-top: auto; /* ดันลงล่างสุด */
   display: flex;
-  justify-content: flex-start; /* จัดปุ่มชิดซ้าย */
+  justify-content: flex-end; /* จัดปุ่มชิดซ้าย */
 }
 
 .hz-book-btn {
-  background-color: #dc2626; /* ปุ่มสีแดงสด */
-  color: white;
-  border: none;
-  padding: 8px 24px; /* ปุ่มกว้างขึ้น */
-  font-size: 0.9rem;
-  font-weight: 700;
-  border-radius: 50px;
-  cursor: pointer;
-  transition: all 0.2s;
+    background-color: #dc2626;
+    color: #ffffff;
+    border: 1px solid #dc2626;
+    padding: 8px 24px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hz-book-btn:hover {
-  background-color: #b91c1c;
-  transform: scale(1.05);
+    background-color: #ffffff;
+    color: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
 }
 
 .hz-book-btn.disabled {
-  background-color: #4b5563;
-  cursor: not-allowed;
-  transform: none;
+    border-color: #9ca3af;
+    color: #9ca3af;
+    background: transparent;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
 /* Responsive: มือถือให้กลับเป็นแนวตั้งเหมือนเดิมถ้ายาวไม่พอ */
+/* Responsive */
 @media (max-width: 600px) {
-  .concert-list {
-    grid-template-columns: 1fr; /* 1 แถว */
-  }
-  
-  /* ถ้าอยากให้มือถือเป็นแนวตั้งก็แก้ตรงนี้ แต่ถ้าอยากได้แนวนอนตลอดก็ลบส่วนนี้ได้ */
-  .horizontal-card {
-    height: auto;
-  }
+    .horizontal-card {
+        height: auto;
+        flex-direction: column;
+    }
+    
+    .horizontal-left {
+        width: 100%;
+        height: 180px;
+    }
+    
+    .horizontal-right {
+        border-left: none;
+        border-top: 2px dashed #e2e8f0; /* เปลี่ยนเป็นเส้นแนวนอน */
+        padding: 24px 20px;
+    }
+    
+    /* ย้ายรอยเจาะไปซ้ายขวาแทนบนล่าง */
+    .horizontal-right::before {
+        top: -10px; left: -10px; /* มุมซ้ายบน */
+    }
+    .horizontal-right::after {
+        top: -10px; right: -10px; /* มุมขวาบน */
+        bottom: auto; left: auto;
+    }
+    
+    .horizontal-action {
+        margin-top: 16px;
+    }
+    
+    .hz-book-btn {
+        width: 100%;
+        text-align: center;
+    }
 }
 
 /* =========================================
@@ -725,10 +751,11 @@
 }
 
 .book-btn.disabled {
-    background: #374151;
-    color: #9ca3af;
+    background: #ffffff;
+    color: #949494;
     cursor: not-allowed;
     box-shadow: none;
+    border: 1px solid #d1d5db;
 }
 
 /* =========================================
