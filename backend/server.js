@@ -8,7 +8,7 @@ const path = require('path');
 const fs = require('fs');
 const emailService = require('./services/emailService');
 
-// Use production database config for production environment
+// Use PostgreSQL for both development and production
 const db = process.env.NODE_ENV === 'production' 
   ? require('./config/database-production') 
   : require('./config/database');
@@ -591,15 +591,19 @@ app.get('/api/admin/stats', async (req, res) => {
       SELECT 
         c.id,
         c.name,
+        c.artist,
+        c.date,
+        c.venue,
         c.total_tickets,
         c.available_tickets,
         c.price,
         c.status,
+        c.image_url,
         COUNT(CASE WHEN r.id IS NOT NULL THEN 1 END) as booked_count,
         COALESCE(SUM(r.total_price), 0) as revenue
       FROM concerts c
       LEFT JOIN reservations r ON c.id = r.concert_id AND r.status = 'confirmed'
-      GROUP BY c.id, c.name, c.total_tickets, c.available_tickets, c.price, c.status
+      GROUP BY c.id, c.name, c.artist, c.date, c.venue, c.total_tickets, c.available_tickets, c.price, c.status, c.image_url
       ORDER BY c.date ASC
     `);
 
@@ -611,6 +615,10 @@ app.get('/api/admin/stats', async (req, res) => {
       concerts: detailedResult.rows.map(c => ({
         id: c.id,
         name: c.name,
+        artist: c.artist,
+        date: c.date,
+        venue: c.venue,
+        imageUrl: c.image_url,
         totalTickets: parseInt(c.total_tickets),
         bookedTickets: parseInt(c.booked_count),
         availableTickets: parseInt(c.available_tickets),

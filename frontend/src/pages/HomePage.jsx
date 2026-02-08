@@ -28,7 +28,7 @@ function HomePage() {
 
   const fetchConcerts = async () => {
     try {
-      const response = await axios.get("/api/concerts");
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/concerts`);
       const sorted = response.data.sort(
         (a, b) => new Date(a.date) - new Date(b.date),
       );

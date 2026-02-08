@@ -32,7 +32,7 @@ function GoogleLoginComponent({ onLoginSuccess }) {
 
       // Send login notification to backend (asynchronous, don't wait)
       try {
-        await axios.post('/api/login', 
+        await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/login`, 
           {
             userName: userData.name,
             userEmail: userData.email,

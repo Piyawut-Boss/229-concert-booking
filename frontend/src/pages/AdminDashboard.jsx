@@ -54,8 +54,8 @@ function AdminDashboard() {
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
       const [statsRes, reservationsRes] = await Promise.all([
-        axios.get("/api/admin/stats", { headers }),
-        axios.get("/api/admin/reservations", { headers }),
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/admin/stats`, { headers }),
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/admin/reservations`, { headers }),
       ]);
 
       setStats(statsRes.data);
@@ -77,7 +77,7 @@ function AdminDashboard() {
     const newStatus = currentStatus === "open" ? "closed" : "open";
 
     try {
-      await axios.put(`/api/admin/concerts/${concertId}`, {
+      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/admin/concerts/${concertId}`, {
         status: newStatus,
       });
       alert(
@@ -95,7 +95,7 @@ function AdminDashboard() {
     if (!confirm("คุณต้องการยกเลิกการจองนี้ใช่หรือไม่?")) return;
 
     try {
-      await axios.delete(`/api/admin/reservations/${reservationId}`);
+      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/admin/reservations/${reservationId}`);
       alert("ยกเลิกการจองสำเร็จ");
       fetchData();
     } catch (error) {
@@ -107,7 +107,7 @@ function AdminDashboard() {
 
   const handleUpdateConcert = async (concertId, updates) => {
     try {
-      await axios.put(`/api/admin/concerts/${concertId}`, updates);
+      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/admin/concerts/${concertId}`, updates);
       alert("อัปเดตข้อมูลสำเร็จ");
       setEditingConcert(null);
       fetchData();
@@ -136,7 +136,7 @@ function AdminDashboard() {
 
   const handleCreateConcert = async (concertData) => {
     try {
-      await axios.post("/api/admin/concerts", concertData);
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/admin/concerts`, concertData);
       alert("สร้างคอนเสิร์ตสำเร็จ");
       setShowCreateForm(false);
       fetchData();
@@ -636,7 +636,7 @@ function EditConcertForm({ concert, onSave, onCancel }) {
     formDataObj.append("file", file);
 
     try {
-      const response = await axios.post("/api/upload", formDataObj, {
+      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/upload`, formDataObj, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setFormData({ ...formData, imageUrl: response.data.url });
@@ -809,7 +809,7 @@ function EditConcertForm({ concert, onSave, onCancel }) {
         {formData.imageUrl && (
           <div style={{ gridColumn: "1 / -1", marginTop: "-8px" }}>
             <img
-              src={formData.imageUrl}
+              src={getImageUrl(formData.imageUrl)}
               alt="Preview"
               style={{
                 maxWidth: "100%",
@@ -859,7 +859,7 @@ function CreateConcertForm({ onSave, onCancel }) {
     formDataObj.append("file", file);
 
     try {
-      const response = await axios.post("/api/upload", formDataObj, {
+      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/upload`, formDataObj, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setFormData({ ...formData, imageUrl: response.data.url });
@@ -1022,7 +1022,7 @@ function CreateConcertForm({ onSave, onCancel }) {
         {formData.imageUrl && (
           <div style={{ gridColumn: "1 / -1", marginTop: "-8px" }}>
             <img
-              src={formData.imageUrl}
+              src={getImageUrl(formData.imageUrl)}
               alt="Preview"
               style={{
                 maxWidth: "100%",

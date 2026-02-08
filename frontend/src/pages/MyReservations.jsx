@@ -117,16 +117,6 @@ function MyReservations() {
           </div>
         </div>
 
-        {/* Loading State */}
-        {loading && (
-          <div className="loading-container">
-            <div className="loading-spinner">
-              <div className="spinner"></div>
-              <p>กำลังโหลดข้อมูล...</p>
-            </div>
-          </div>
-        )}
-
         {/* Empty State */}
         {!loading && reservations.length === 0 && (
           <div className="empty-state">
@@ -162,7 +152,7 @@ function MyReservations() {
                   key={reservation.id} 
                   className="reservation-card"
                   onClick={() => handleConcertCardClick(reservation)}
-                  style={{ animationDelay: `${index * 0.1}s`, cursor: 'pointer' }}
+                  style={{ cursor: 'pointer' }}
                 >
                   {/* Card Header */}
                   <div className="card-header">

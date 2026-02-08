@@ -25,7 +25,7 @@ function BookingModal({ concert, onClose, onSuccess }) {
     setLoading(true)
 
     try {
-      const response = await axios.post('/api/reservations', {
+      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/reservations`, {
         concertId: concert.id,
         ...formData,
         quantity: parseInt(formData.quantity),

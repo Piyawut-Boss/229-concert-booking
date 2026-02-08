@@ -27,7 +27,7 @@ function AdminLogin() {
     setLoading(true)
 
     try {
-      const response = await axios.post('/api/admin/login', formData)
+      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/admin/login`, formData)
       
       // Use new loginAdmin function
       loginAdmin(response.data.user, response.data.token)

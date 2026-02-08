@@ -14,7 +14,7 @@ const pool = new Pool({
   connectionString,
   max: 20,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 5000,  // Increased from 2000 to 5000ms
   host: 'localhost',
   port: 5432,
 });
