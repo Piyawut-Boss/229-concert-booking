@@ -8,6 +8,9 @@ const path = require('path');
 const fs = require('fs');
 const emailService = require('./services/emailService');
 
+// ========== CORS FIX VERSION 2 ==========
+// Force rebuild with proper CORS configuration
+
 // Use PostgreSQL for both development and production
 const db = process.env.NODE_ENV === 'production' 
   ? require('./config/database-production') 
