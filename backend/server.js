@@ -84,7 +84,9 @@ app.options('*', cors());
 
 console.log('✅ CORS Middleware loaded - Allowed Origins:', allowedOrigins);
 
-// Serve uploaded files as static assets
+// JSON Parser Middleware - MUST be before routes
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use('/uploads', express.static(uploadsDir));
 
 // ========== Health Check Endpoint (for Railway) ==========
