@@ -166,11 +166,6 @@ async function requireGoogleAuth(req, res, next) {
 
 // ========== API Routes ==========
 
-// Health Check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString(), database: 'PostgreSQL' });
-});
-
 // File Upload Endpoint
 app.post('/api/upload', upload.single('file'), (req, res) => {
   if (!req.file) {

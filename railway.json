@@ -4,6 +4,6 @@
     "builder": "dockerfile"
   },
   "deploy": {
-    "startCommand": "npm run start:railway"
+    "startCommand": "node server.js"
   }
 }
