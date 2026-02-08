@@ -71,6 +71,7 @@ app.use(cors(corsOptions));
 app.use('/uploads', express.static(uploadsDir));
 
 // ========== Health Check Endpoint (for Railway) ==========
+// CORS FIX v3 - Cache bust
 app.get('/api/health', async (req, res) => {
   try {
     const dbHealthy = await db.testConnection();
