@@ -58,14 +58,27 @@ const upload = multer({
 });
 
 // Middleware
-const corsOptions = {
-  origin: '*',
-  credentials: false,
+const allowedOrigins = [
+  'https://exemplary-warmth-production-9820.up.railway.app',
+  'http://localhost:3000'
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // allow requests with no origin (like Postman)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('CORS not allowed: ' + origin));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-};
+}));
 
-app.use(cors(corsOptions));
+app.options('*', cors());
 
 // Serve uploaded files as static assets
 app.use('/uploads', express.static(uploadsDir));
