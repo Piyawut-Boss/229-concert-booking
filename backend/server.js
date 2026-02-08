@@ -382,14 +382,30 @@ app.post('/api/reservations', requireGoogleAuth, async (req, res) => {
 app.get('/api/reservations/:email', async (req, res) => {
   try {
     const result = await db.query(
-      `SELECT id, concert_id, customer_name, customer_email, quantity, total_price, status, google_auth, reserved_at
-       FROM reservations WHERE LOWER(customer_email) = LOWER($1) ORDER BY reserved_at DESC`,
+      `SELECT r.id, r.concert_id, c.id as concert_id_full, c.name, c.artist, c.date, c.venue, c.total_tickets, c.available_tickets, c.price, c.status as concert_status, c.image_url, 
+              r.customer_name, r.customer_email, r.quantity, r.total_price, r.status, r.google_auth, r.reserved_at
+       FROM reservations r
+       LEFT JOIN concerts c ON r.concert_id = c.id
+       WHERE LOWER(r.customer_email) = LOWER($1) ORDER BY r.reserved_at DESC`,
       [req.params.email]
     );
     
     const reservations = result.rows.map(r => ({
       id: r.id,
       concertId: r.concert_id,
+      concert: r.concert_id_full ? {
+        id: r.concert_id_full,
+        name: r.name,
+        artist: r.artist,
+        date: r.date,
+        venue: r.venue,
+        totalTickets: parseInt(r.total_tickets),
+        availableTickets: parseInt(r.available_tickets),
+        price: parseFloat(r.price),
+        status: r.concert_status,
+        imageUrl: r.image_url
+      } : null,
+      concertName: r.name,
       customerName: r.customer_name,
       customerEmail: r.customer_email,
       quantity: r.quantity,
@@ -841,6 +857,95 @@ app.delete('/api/admin/reservations/:id', async (req, res) => {
   } catch (error) {
     console.error('Cancel reservation error:', error);
     res.status(500).json({ error: error.message || 'Failed to cancel reservation' });
+  } finally {
+    if (concertId !== null) {
+      releaseLock(concertId);
+    }
+  }
+});
+
+// Admin: Update reservation status
+app.put('/api/admin/reservations/:id', async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  
+  // Validate status
+  if (!['confirmed', 'pending', 'cancelled'].includes(status)) {
+    return res.status(400).json({ error: 'Invalid status. Must be confirmed, pending, or cancelled' });
+  }
+  
+  if (!id) {
+    return res.status(400).json({ error: 'Invalid reservation ID' });
+  }
+  
+  let concertId = null;
+
+  try {
+    // Get current reservation details
+    const reservationResult = await db.query(
+      'SELECT id, concert_id, quantity, status FROM reservations WHERE id = $1',
+      [id]
+    );
+    
+    if (reservationResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Reservation not found' });
+    }
+
+    const reservation = reservationResult.rows[0];
+    const currentStatus = reservation.status;
+    concertId = reservation.concert_id;
+
+    // No change needed
+    if (currentStatus === status) {
+      return res.json({ success: true, message: 'Reservation status unchanged' });
+    }
+    
+    await acquireLock(concertId);
+
+    try {
+      // Start transaction
+      await db.query('BEGIN');
+
+      // Handle ticket count changes
+      if (currentStatus === 'cancelled' && status === 'confirmed') {
+        // Restoring cancelled reservation - reduce available tickets
+        await db.query(
+          'UPDATE concerts SET available_tickets = available_tickets - $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+          [reservation.quantity, concertId]
+        );
+      } else if (currentStatus !== 'cancelled' && status === 'cancelled') {
+        // Cancelling confirmed/pending reservation - return tickets
+        await db.query(
+          'UPDATE concerts SET available_tickets = available_tickets + $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+          [reservation.quantity, concertId]
+        );
+      }
+
+      // Update reservation status
+      const resUpdate = await db.query(
+        'UPDATE reservations SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
+        [status, id]
+      );
+
+      await db.query('COMMIT');
+
+      console.log(`[ADMIN] Reservation ${id} status changed from ${currentStatus} to ${status}`);
+
+      res.json({ 
+        success: true, 
+        message: `Reservation status updated to ${status}`,
+        reservation: {
+          id: resUpdate.rows[0].id,
+          status: resUpdate.rows[0].status
+        }
+      });
+    } catch (txError) {
+      await db.query('ROLLBACK');
+      throw txError;
+    }
+  } catch (error) {
+    console.error('Update reservation error:', error);
+    res.status(500).json({ error: error.message || 'Failed to update reservation' });
   } finally {
     if (concertId !== null) {
       releaseLock(concertId);

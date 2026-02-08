@@ -36,14 +36,9 @@ function AppContent() {
                 Admin
               </Link>
             )}
-            {!admin && (
-              <Link to="/admin" className="nav-link">
-                🔐 Admin Login
-              </Link>
-            )}
             {user ? (
               <div className="user-section">
-                <span className="user-name">👤 {user.name}</span>
+                <span className="user-name">{user.name}</span>
                 <button className="btn-logout" onClick={logout}>
                   Logout
                 </button>
@@ -77,13 +72,18 @@ function AppContent() {
       <footer className="footer">
         <div className="container">
           <p>
-            © 2026 Concert Ticket Reservation System | Built with React &
-            Node.js
+            © 2026 Concert Ticket Reservation | 240-229 SDA
           </p>
           <p style={{ fontSize: "14px", marginTop: "8px", opacity: 0.8 }}>
-            Features: Multithreading, Concurrency Control, Distributed System
-            Architecture
+            Computer Engineering Prince of Songkla University
           </p>
+          {!admin && (
+            <p style={{ marginTop: "16px", paddingTop: "16px", borderTop: "1px solid rgba(0, 0, 0, 0.1)" }}>
+              <Link to="/admin" style={{ color: "#6b7280", textDecoration: "none", fontWeight: 600 }}>
+                Admin Login
+              </Link>
+            </p>
+          )}
         </div>
       </footer>
 

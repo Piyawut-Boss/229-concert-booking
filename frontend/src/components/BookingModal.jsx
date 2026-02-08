@@ -57,24 +57,17 @@ function BookingModal({ concert, onClose, onSuccess }) {
             <button className="modal-close" onClick={onClose}>×</button>
           </div>
 
-          <div style={{padding: '40px', textAlign: 'center', background: '#eff6ff', borderRadius: '8px'}}>
-            <h3 style={{marginBottom: '12px', color: '#1e40af', fontSize: '24px'}}>
+          <div style={{padding: '40px', textAlign: 'center', background: '#fee2e2', borderRadius: '8px'}}>
+            <h3 style={{marginBottom: '12px', color: '#dc2626', fontSize: '24px'}}>
               ⚠️ กรุณาเข้าสู่ระบบก่อน
             </h3>
-            <p style={{marginBottom: '20px', color: '#1e3a8a', fontSize: '16px'}}>
+            <p style={{marginBottom: '20px', color: '#991b1b', fontSize: '16px'}}>
               คุณต้องเข้าสู่ระบบผ่าน Google account เพื่อจองบัตร
             </p>
-            <p style={{marginBottom: '24px', color: '#1e3a8a', fontSize: '14px', opacity: 0.8}}>
+            <p style={{marginBottom: '24px', color: '#991b1b', fontSize: '14px', opacity: 0.8}}>
               คลิกปุ่ม "Sign in" ในหัวข้อเพื่อเข้าสู่ระบบ
             </p>
-            <button
-              className="btn btn-secondary"
-              onClick={onClose}
-              style={{padding: '12px 32px', fontSize: '16px'}}
-            >
-              ปิด
-            </button>
-          </div>
+            </div>
         </div>
       </div>
     )
@@ -143,7 +136,7 @@ function BookingModal({ concert, onClose, onSuccess }) {
 
           <div style={{
             padding: '16px',
-            background: '#f0fdf4',
+            background: '#fee2e2',
             borderRadius: '8px',
             marginBottom: '20px'
           }}>
@@ -155,10 +148,10 @@ function BookingModal({ concert, onClose, onSuccess }) {
               <span>จำนวน:</span>
               <span style={{fontWeight: 600}}>{formData.quantity} ใบ</span>
             </div>
-            <hr style={{margin: '12px 0', border: 'none', borderTop: '1px solid #d1fae5'}} />
+            <hr style={{margin: '12px 0', border: 'none', borderTop: '1px solid #fecaca'}} />
             <div style={{display: 'flex', justifyContent: 'space-between'}}>
               <span style={{fontSize: '18px', fontWeight: 700}}>ราคารวม:</span>
-              <span style={{fontSize: '24px', fontWeight: 700, color: '#10b981'}}>
+              <span style={{fontSize: '24px', fontWeight: 700, color: '#dc2626'}}>
                 ฿{totalPrice.toLocaleString()}
               </span>
             </div>

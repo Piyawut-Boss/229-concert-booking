@@ -3,6 +3,7 @@ import GoogleLoginComponent from './GoogleLogin'
 import './LoginModal.css'
 import { FaTimes } from 'react-icons/fa'
 import Turnstile from 'react-turnstile'
+import logo from '../../assets/WaveLogo.png'
 
 function LoginModal({ isOpen, onClose }) {
   const [captchaToken, setCaptchaToken] = useState(null)
@@ -43,7 +44,7 @@ function LoginModal({ isOpen, onClose }) {
 
           {/* Header Section */}
           <div className="login-modal-header">
-            <div className="header-icon">🎵</div>
+            <div className="header-icon"><img src={logo} alt="Logo" style={{width: '50px', height: '50px', objectFit: 'contain'}} /></div>
             <h1 className="modal-title">เข้าสู่ระบบ</h1>
             <p className="modal-subtitle">เลือกวิธีการเข้าสู่ระบบเพื่อจองตั๋วคอนเสิร์ต</p>
           </div>

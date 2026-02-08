@@ -5,7 +5,7 @@
 /* Page Container */
 .reservations-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-color: #f8fafc;
   padding: 40px 16px;
 }
 
@@ -17,7 +17,7 @@
 /* Header Section */
 .reservations-header {
   margin-bottom: 36px;
-  color: white;
+  color: #1f2937;
 }
 
 .reservations-header h1 {
@@ -48,7 +48,7 @@
   padding: 28px;
   margin-bottom: 32px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-  border: 1px solid rgba(102, 126, 234, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.08);
 }
 
 .profile-header {
@@ -64,7 +64,7 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
   color: white;
   display: flex;
   align-items: center;
@@ -72,7 +72,7 @@
   font-size: 26px;
   font-weight: 700;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
 }
 
 .profile-info h3 {
@@ -114,7 +114,7 @@
   display: block;
   font-size: 11px;
   font-weight: 700;
-  color: #9ca3af;
+  color: #1f2937;
   text-transform: uppercase;
   letter-spacing: 0.6px;
   margin-bottom: 6px;
@@ -124,10 +124,7 @@
   display: block;
   font-size: 24px;
   font-weight: 800;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #1f2937;
 }
 
 /* Empty State */
@@ -176,9 +173,9 @@
 
 .filter-btn {
   padding: 9px 18px;
-  border: 1.5px solid rgba(255, 255, 255, 0.35);
-  background: transparent;
-  color: white;
+  border: 1.5px solid #fca5a5;
+  background: #fef2f2;
+  color: #b91c1c;
   border-radius: 7px;
   font-size: 12px;
   font-weight: 600;
@@ -189,16 +186,16 @@
 }
 
 .filter-btn:hover {
-  border-color: white;
-  background: rgba(255, 255, 255, 0.12);
+  border-color: #f87171;
+  background: #fed7d7;
   transform: translateY(-1px);
 }
 
 .filter-btn.active {
-  background: white;
-  color: #667eea;
-  border-color: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: #f87171;
+  color: white;
+  border-color: #f87171;
+  box-shadow: 0 4px 12px rgba(248, 113, 113, 0.2);
 }
 
 /* Reservations Grid */
@@ -215,13 +212,13 @@
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(102, 126, 234, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.08);
 }
 
 .reservation-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 28px rgba(102, 126, 234, 0.18);
-  border-color: rgba(102, 126, 234, 0.2);
+  box-shadow: 0 12px 28px rgba(220, 38, 38, 0.18);
+  border-color: rgba(220, 38, 38, 0.2);
 }
 
 /* Card Header */
@@ -248,7 +245,7 @@
 .concert-icon {
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -256,7 +253,7 @@
   color: white;
   font-size: 16px;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
 }
 
 .card-title-section h3 {
@@ -299,7 +296,7 @@
 
 .status-cancelled {
   background: #fee2e2;
-  color: #7f1d1d;
+  color: #991b1b;
 }
 
 /* Card Details */
@@ -327,12 +324,12 @@
 .detail-icon {
   width: 28px;
   height: 28px;
-  background: #f0f4ff;
+  background: #fee2e2;
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #667eea;
+  color: #dc2626;
   font-size: 12px;
   flex-shrink: 0;
 }
@@ -374,7 +371,7 @@
 .total-price {
   font-size: 18px;
   font-weight: 800;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -636,7 +633,7 @@
   position: absolute;
   width: 300px;
   height: 300px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
   border-radius: 50%;
   opacity: 0.08;
   top: -100px;
@@ -667,12 +664,12 @@
 }
 
 .modal-content::-webkit-scrollbar-thumb {
-  background: rgba(102, 126, 234, 0.3);
+  background: rgba(220, 38, 38, 0.3);
   border-radius: 4px;
 }
 
 .modal-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(102, 126, 234, 0.5);
+  background: rgba(220, 38, 38, 0.5);
 }
 
 /* Modal Header */
@@ -695,10 +692,10 @@
 }
 
 .modal-close-btn {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-  border: 1px solid rgba(102, 126, 234, 0.2);
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(185, 28, 28, 0.1) 100%);
+  border: 1px solid rgba(220, 38, 38, 0.2);
   font-size: 20px;
-  color: #667eea;
+  color: #dc2626;
   cursor: pointer;
   width: 40px;
   height: 40px;
@@ -712,10 +709,10 @@
 }
 
 .modal-close-btn:hover {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
-  color: #764ba2;
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.2) 0%, rgba(185, 28, 28, 0.2) 100%);
+  color: #b91c1c;
   transform: scale(1.1) rotate(90deg);
-  border-color: rgba(102, 126, 234, 0.4);
+  border-color: rgba(220, 38, 38, 0.4);
 }
 
 /* Modal Body */
@@ -796,29 +793,29 @@
 }
 
 .info-item:hover {
-  background: linear-gradient(135deg, #f0f4ff 0%, #f8fafc 100%);
-  border-color: #c7d2fe;
+  background: linear-gradient(135deg, #fee2e2 0%, #fef2f2 100%);
+  border-color: #fecaca;
   transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.12);
+  box-shadow: 0 8px 20px rgba(220, 38, 38, 0.12);
 }
 
 .info-icon {
   width: 32px;
   height: 32px;
-  color: #667eea;
-  font-size: 16px;
+  color: #dc2626;
+  font-size: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.12), rgba(118, 75, 162, 0.12));
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.12), rgba(185, 28, 28, 0.12));
   border-radius: 8px;
   transition: all 0.3s ease;
-  border: 1px solid rgba(102, 126, 234, 0.2);
+  border: 1px solid rgba(220, 38, 38, 0.2);
 }
 
 .info-item:hover .info-icon {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.2), rgba(185, 28, 28, 0.2));
   transform: scale(1.1);
 }
 
@@ -857,8 +854,8 @@
 
 /* Reservation Summary */
 .reservation-summary {
-  background: linear-gradient(135deg, #f0f4ff 0%, #fdf8ff 100%);
-  border: 1px solid #e0e7ff;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 14px;
   margin: 16px 0 0 0;
@@ -882,7 +879,7 @@
   content: '';
   width: 4px;
   height: 4px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
   border-radius: 50%;
 }
 
@@ -890,7 +887,7 @@
   content: '';
   width: 4px;
   height: 4px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
   border-radius: 50%;
 }
 
@@ -901,7 +898,7 @@
   padding: 8px 0;
   font-size: 12px;
   color: #1f2937;
-  border-bottom: 1px solid rgba(102, 126, 234, 0.08);
+  border-bottom: 1px solid rgba(220, 38, 38, 0.08);
 }
 
 .summary-item:last-child {
@@ -912,10 +909,10 @@
   padding: 10px 0 0 0;
   margin-top: 6px;
   padding-top: 10px;
-  border-top: 1px solid rgba(102, 126, 234, 0.2);
+  border-top: 1px solid rgba(220, 38, 38, 0.2);
   font-size: 13px;
   font-weight: 700;
-  color: #667eea;
+  color: #dc2626;
 }
 
 .summary-item strong {
@@ -937,7 +934,7 @@
 
 .btn-close {
   padding: 10px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -947,7 +944,7 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   letter-spacing: 0.3px;
   text-transform: uppercase;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
   position: relative;
   overflow: hidden;
 }
@@ -964,7 +961,7 @@
 
 .btn-close:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(102, 126, 234, 0.35);
+  box-shadow: 0 10px 28px rgba(220, 38, 38, 0.35);
 }
 
 .btn-close:hover::before {
@@ -1026,7 +1023,7 @@
   .info-icon {
     width: 28px;
     height: 28px;
-    font-size: 14px;
+    font-size: 10px;
   }
 
   .info-label {
@@ -1111,7 +1108,7 @@
   .info-icon {
     width: 24px;
     height: 24px;
-    font-size: 12px;
+    font-size: 8px;
   }
 
   .info-label {

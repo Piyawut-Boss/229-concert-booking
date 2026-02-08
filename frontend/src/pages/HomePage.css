@@ -224,7 +224,7 @@
 }
 
 .ticket-card .price-btn-red:hover {
-    background: #b91c1c !important;
+    background: #dc2626 !important;
     transform: scale(1.02);
 }
 
@@ -293,12 +293,12 @@
 .amount {
     font-size: 1.6rem;
     font-weight: 700;
-    color: #c084fc;
+    color: #dc2626;
 }
 
 .book-btn {
     width: 100%;
-    background: linear-gradient(135deg, #8b5cf6, #ec4899);
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
     color: white;
     border: none;
     padding: 12px;
@@ -307,12 +307,12 @@
     border-radius: 50px;
     cursor: pointer;
     transition: transform 0.2s;
-    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
 }
 
 .book-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5);
 }
 
 .book-btn.disabled {
@@ -732,7 +732,7 @@
 
 .book-btn {
     width: 100%;
-    background: linear-gradient(135deg, #8b5cf6, #ec4899);
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
     color: white;
     border: none;
     padding: 12px;
@@ -741,12 +741,12 @@
     border-radius: 50px;
     cursor: pointer;
     transition: transform 0.2s;
-    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
 }
 
 .book-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5);
 }
 
 .book-btn.disabled {

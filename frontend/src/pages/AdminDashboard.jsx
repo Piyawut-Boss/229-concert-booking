@@ -115,6 +115,23 @@ function AdminDashboard() {
     }
   };
 
+  const handleApproveReservation = async (reservationId) => {
+    if (!confirm("คุณต้องการยืนยันการจองนี้ใช่หรือไม่?")) return;
+
+    try {
+      await axios.put(
+        `${import.meta.env.VITE_API_BASE_URL}/api/admin/reservations/${reservationId}`,
+        { status: 'confirmed' }
+      );
+      alert("ยืนยันการจองสำเร็จ");
+      fetchData();
+    } catch (error) {
+      alert(
+        "เกิดข้อผิดพลาด: " + (error.response?.data?.error || "Unknown error"),
+      );
+    }
+  };
+
   const handleUpdateConcert = async (concertId, updates) => {
     try {
       await axios.put(
@@ -348,7 +365,11 @@ function AdminDashboard() {
                               </td>
 
                               {/* 4. ราคา (ใส่ || 0 ป้องกัน Error) */}
-                              <td>฿{(concert.price || 0).toLocaleString()}</td>
+                              <td>
+                                <span className="revenue-text">
+                                  ฿{(concert.price || 0).toLocaleString()}
+                                </span>
+                              </td>
 
                               {/* 5. การจอง */}
                               <td>
@@ -365,14 +386,7 @@ function AdminDashboard() {
 
                               {/* 6. คงเหลือ */}
                               <td>
-                                <span
-                                  style={{
-                                    fontWeight: 600,
-                                    padding: "4px 8px",
-                                    borderRadius: "6px",
-                                    fontSize: "13px",
-                                  }}
-                                >
+                                <span className="revenue-text">
                                   {(concert.availableTickets || 0) > 0
                                     ? concert.availableTickets
                                     : "หมด"}
@@ -648,18 +662,28 @@ function AdminDashboard() {
                         {new Date(res.reservedAt).toLocaleString("th-TH")}
                       </td>
                       <td>
-                        <span className="badge badge-success">
-                          {res.status}
+                        <span className={`badge ${res.status === 'confirmed' ? 'badge-success' : res.status === 'pending' ? 'badge-warning' : res.status === 'cancelled' ? 'badge-danger' : 'badge-success'}`}>
+                          {res.status === 'confirmed' ? 'ยืนยันแล้ว' : res.status === 'pending' ? 'กำลังรอ' : res.status === 'cancelled' ? 'ยกเลิก' : res.status}
                         </span>
                       </td>
                       <td>
-                        <button
-                          className="btn btn-danger"
-                          style={{ padding: "6px 12px", fontSize: "14px" }}
-                          onClick={() => handleCancelReservation(res.id)}
-                        >
-                          ยกเลิก
-                        </button>
+                        {res.status === 'cancelled' ? (
+                          <button
+                            className="btn btn-success"
+                            style={{ padding: "6px 12px", fontSize: "14px" }}
+                            onClick={() => handleApproveReservation(res.id)}
+                          >
+                            ยืนยัน
+                          </button>
+                        ) : (
+                          <button
+                            className="btn btn-danger"
+                            style={{ padding: "6px 12px", fontSize: "14px" }}
+                            onClick={() => handleCancelReservation(res.id)}
+                          >
+                            ยกเลิก
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}

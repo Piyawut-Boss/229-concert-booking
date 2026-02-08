@@ -143,6 +143,18 @@ function MyReservations() {
               >
                 ยืนยันแล้ว ({reservations.filter(r => r.status === 'confirmed').length})
               </button>
+              <button 
+                className={`filter-btn ${filter === 'pending' ? 'active' : ''}`}
+                onClick={() => setFilter('pending')}
+              >
+                กำลังรอ ({reservations.filter(r => r.status === 'pending').length})
+              </button>
+              <button 
+                className={`filter-btn ${filter === 'cancelled' ? 'active' : ''}`}
+                onClick={() => setFilter('cancelled')}
+              >
+                ยกเลิก ({reservations.filter(r => r.status === 'cancelled').length})
+              </button>
             </div>
 
             {/* Reservations Grid */}
@@ -161,12 +173,12 @@ function MyReservations() {
                         <FaMusic />
                       </div>
                       <div>
-                        <h3>{reservation.concertName}</h3>
+                        <h3>{reservation.concert?.name || reservation.concertName}</h3>
                         <p className="reservation-id">#{reservation.id}</p>
                       </div>
                     </div>
                     <span className={`status-badge status-${reservation.status}`}>
-                      {reservation.status === 'confirmed' ? '✓ ยืนยันแล้ว' : reservation.status}
+                      {reservation.status === 'confirmed' ? 'ยืนยันแล้ว' : reservation.status === 'pending' ? 'กำลังรอ' : reservation.status === 'cancelled' ? 'ยกเลิก' : reservation.status}
                     </span>
                   </div>
 
@@ -175,6 +187,16 @@ function MyReservations() {
 
                   {/* Card Details */}
                   <div className="card-details">
+                    <div className="detail-row">
+                      <div className="detail-item">
+                        <span className="detail-icon"><FaMusic /></span>
+                        <div>
+                          <p className="detail-label">คอนเสิร์ต</p>
+                          <p className="detail-value">{reservation.concert?.name || reservation.concertName}</p>
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="detail-row">
                       <div className="detail-item">
                         <span className="detail-icon"><FaUser /></span>
@@ -339,7 +361,7 @@ function MyReservations() {
               ) : (
                 <div className="concert-details">
                   <div className="concert-info">
-                    <h3 className="concert-title">{selectedReservation.concertName}</h3>
+                    <h3 className="concert-title">{selectedReservation.concert?.name || selectedReservation.concertName}</h3>
                     <p className="no-details">ไม่สามารถโหลดรายละเอียดคอนเสิร์ต</p>
                     
                     {/* Show available reservation info */}
@@ -361,7 +383,6 @@ function MyReservations() {
 
             {/* Modal Footer */}
             <div className="modal-footer">
-              <button className="btn-close" onClick={closeModal}>ปิด</button>
             </div>
           </div>
         </div>
