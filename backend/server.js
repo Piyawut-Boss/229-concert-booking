@@ -59,23 +59,13 @@ const upload = multer({
 
 // Middleware
 const corsOptions = {
-  origin: '*',  // Allow all origins for now
+  origin: '*',
   credentials: false,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
 app.use(cors(corsOptions));
-
-// JSON parser - skip for multipart/form-data requests
-app.use((req, res, next) => {
-  if (req.is('multipart/form-data')) {
-    // Skip JSON parsing for multipart requests
-    next();
-  } else {
-    express.json()(req, res, next);
-  }
-});
 
 // Serve uploaded files as static assets
 app.use('/uploads', express.static(uploadsDir));
