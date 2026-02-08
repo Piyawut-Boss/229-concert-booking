@@ -539,6 +539,16 @@ app.post('/api/admin/login', async (req, res) => {
       return res.status(400).json({ error: 'Username and password required' });
     }
     
+    // First, ensure admin user exists - create if needed
+    try {
+      await db.query(
+        'INSERT INTO admin_users (username, password, role) VALUES ($1, $2, $3) ON CONFLICT (username) DO NOTHING',
+        ['admin', 'admin123', 'admin']
+      );
+    } catch (e) {
+      // Ignore conflicts
+    }
+    
     const result = await db.query(
       'SELECT id, username, password, role FROM admin_users WHERE username = $1',
       [username]
