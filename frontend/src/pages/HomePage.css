@@ -10,7 +10,8 @@
 .ticket-card {
     display: flex;
     flex-direction: column;
-    background-color: transparent;/ box-shadow: none;
+    background-color: transparent;
+    box-shadow: none;
     border: none;
     height: 100%;
     transition: transform 0.3s ease;
@@ -20,9 +21,7 @@
     transform: translateY(-8px);
 }
 
-.ticket-card:hover .ticket-left {
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
-}
+
 
 /* =========================================
    ส่วนที่ 1: ปก Concert (Poster)
@@ -31,10 +30,8 @@
     width: 100%;
     height: 400px;
     position: relative;
-
     border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 
 }
 
@@ -54,32 +51,53 @@
    ส่วนที่ 2: รายละเอียด (Details Card)
    ========================================= */
 .ticket-right {
-    flex: 1;
-    background-color: #29292f;
-
-    border-radius: 16px;
-    padding: 20px;
+    border-radius: 16px 16px 0 0;
+    background-color: #ffffff !important;
+    padding: 20px 20px 30px 20px; /* เพิ่ม padding ล่างเผื่อไว้หน่อยครับ */
+    /* ลบ border-radius ด้านล่างออก */
+    /* ลบ border ด้านล่างออก */
+    border-bottom: none !important;
+    border-left: 1px solid #eee;
+    border-right: 1px solid #eee;
+    border-top: 1px solid #eee;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    gap: 12px;
+    /* สำคัญมาก: ต้องมีบรรทัดนี้ เพื่อให้ตัวรอยหยักอ้างอิงตำแหน่งได้ */
     position: relative;
+    /* สำคัญมาก: ต้องให้มันแสดงส่วนที่ล้นออกมาได้ */
+    overflow: visible !important;
+}
+
+.ticket-card .ticket-right::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -15px; /* ความสูงของรอยหยัก */
+    height: 15px;
+    background-size: 20px 15px; /* ความกว้าง x ความสูง ของหยักหนึ่งอัน */
+    background-repeat: repeat-x;
+    background-image: 
+        /* เปลี่ยนจาก 45deg เป็น 225deg เพื่อให้ยอดสามเหลี่ยมชี้ลง */
+        linear-gradient(135deg, #ffffff 50%, transparent 50%), 
+        linear-gradient(225deg, #ffffff 50%, transparent 50%);
+    background-position: top center;
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.05));
+    z-index: 1;
 }
 
 /* Typography */
 .concert-name {
+    color: #1a1a1a !important;
     font-size: 1.25rem;
-    font-weight: 700;
-    margin: 0 0 6px 0;
-    color: #ffffff !important;
-    line-height: 1.3;
+    margin: 0;
 }
 
 .artist-name {
-    font-size: 0.95rem;
-    font-weight: 500;
-    color: #bba3e7;
-    margin: 0 0 16px 0;
+    color: #666;
+    font-size: 0.9rem;
+    margin: 4px 0 0 0;
 }
 
 /* Meta Info */
@@ -87,13 +105,12 @@
     margin-bottom: 20px;
 }
 
-.meta-item {
+.ticket-card .section-venue .meta-item {
+    color: #444;
+    font-size: 0.9rem;
     display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    color: #a0a0a0;
-    font-size: 0.85rem;
-    margin-bottom: 6px;
+    align-items: center;
+    gap: 8px;
 }
 
 .meta-item .icon-calendar,
@@ -101,6 +118,55 @@
     width: 12px;
     height: 12px; 
     margin-top: 0;
+}
+
+.ticket-card .section-date {
+    border-top: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 10px 0;
+}
+
+.ticket-card .date-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+}
+.ticket-card .date-day {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #1a1a1a;
+    flex: 1;
+}
+.ticket-card .date-month {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #666;
+    flex: 1;
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+}
+.ticket-card .date-year {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    flex: 1;
+}
+
+/* ปุ่มกดซื้อสีแดงและแสดงราคา */
+.ticket-card .price-btn-red {
+    background: #dc2626 !important; /* สีแดง */
+    color: white !important;
+    font-size: 1.2rem;
+    font-weight: 700;
+    padding: 12px;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.ticket-card .price-btn-red:hover {
+    background: #b91c1c !important;
+    transform: scale(1.02);
 }
 
 /* Stats (ตั๋ว) */
@@ -338,7 +404,7 @@
 .horizontal-card {
   display: flex;
   flex-direction: row;
-  background-color: #151515; /* สีพื้นหลังเข้มขึ้น (ตาม Ref) */
+  background-color: #ffffff; /* สีพื้นหลังเข้มขึ้น (ตาม Ref) */
   border-radius: 16px;
   overflow: hidden;
   height: 200px; /* เพิ่มความสูงนิดหน่อยให้พอดีเนื้อหา */
@@ -367,7 +433,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* Key Point: ใส่ border-radius ให้รูปภาพด้วย */
   border-radius: 12px; 
   display: block;
 }
@@ -377,7 +442,6 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  /* padding ไม่ต้องใส่เยอะ เพราะมี gap จากตัวแม่แล้ว */
   padding-right: 4px; 
 }
 
@@ -388,7 +452,7 @@
 .horizontal-info h3 {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #ffffff;
+  color: #000000;
   margin: 0 0 4px 0;
   line-height: 1.4;
   
@@ -402,7 +466,7 @@
 .horizontal-artist {
   font-size: 0.9rem;
   font-weight: 500;
-  color: #a0a0a0; /* สีเทาจางลง */
+  color: #000000; /* สีเทาจางลง */
   margin-bottom: 12px;
 }
 
@@ -412,8 +476,12 @@
   align-items: center;
   gap: 8px;
   font-size: 0.85rem;
-  color: #cccccc;
+  color: #040404;
   margin-bottom: 6px;
+}
+
+.horizontal-card .hz-meta-item span {
+    color: #000000; /* หรือสีที่คุณต้องการ */
 }
 
 .hz-meta-item .icon-calendar,
@@ -497,7 +565,6 @@
     position: relative;
     border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 
 }
 
@@ -516,43 +583,47 @@
 
 /* ส่วนรายละเอียด */
 .ticket-right {
-    flex: 1;
-    background-color: #1e1e24;
-    border-radius: 16px;
-    padding: 20px;
+    border-radius: 16px 16px 0 0;
+    background-color: #ffffff !important;
+    padding: 20px 20px 30px 20px; /* เพิ่ม padding ล่างเผื่อไว้หน่อยครับ */
+    /* ลบ border-radius ด้านล่างออก */
+    /* ลบ border ด้านล่างออก */
+    border-bottom: none !important;
+    border-left: 1px solid #eee;
+    border-right: 1px solid #eee;
+    border-top: 1px solid #eee;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    gap: 12px;
+    /* สำคัญมาก: ต้องมีบรรทัดนี้ เพื่อให้ตัวรอยหยักอ้างอิงตำแหน่งได้ */
+    position: relative;
+    /* สำคัญมาก: ต้องให้มันแสดงส่วนที่ล้นออกมาได้ */
+    overflow: visible !important;
 }
 
 /* Typography & Stats */
 .concert-name {
+    color: #1a1a1a !important;
     font-size: 1.25rem;
-    font-weight: 700;
-    margin: 0 0 6px 0;
-    color: #ffffff !important;
-    line-height: 1.3;
+    margin: 0;
 }
 
 .artist-name {
-    font-size: 0.95rem;
-    font-weight: 500;
-    color: #bba3e7;
-    margin: 0 0 16px 0;
+    color: #666;
+    font-size: 0.9rem;
+    margin: 4px 0 0 0;
 }
 
 .meta-info {
     margin-bottom: 20px;
 }
 
-.meta-item {
+.ticket-card .section-venue .meta-item {
+    color: #444;
+    font-size: 0.9rem;
     display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    color: #a0a0a0;
-    font-size: 0.85rem;
-    margin-bottom: 6px;
+    align-items: center;
+    gap: 8px;
 }
 
 .ticket-stats {

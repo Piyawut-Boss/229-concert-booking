@@ -2,7 +2,12 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import BookingModal from "../components/BookingModal";
 import "./HomePage.css";
-import { FaCalendarAlt, FaMapMarkerAlt, FaSearch, FaFilter } from "react-icons/fa";
+import {
+  FaCalendarAlt,
+  FaMapMarkerAlt,
+  FaSearch,
+  FaFilter,
+} from "react-icons/fa";
 
 function HomePage() {
   const [concerts, setConcerts] = useState([]);
@@ -28,7 +33,9 @@ function HomePage() {
 
   const fetchConcerts = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/concerts`);
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/concerts`,
+      );
       const sorted = response.data.sort(
         (a, b) => new Date(a.date) - new Date(b.date),
       );
@@ -125,6 +132,10 @@ function HomePage() {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return {
+      day: date.getDate(),
+      month: date.toLocaleDateString("en-US", { month: "short" }).toUpperCase(),
+      year: date.getFullYear(),
+
       date: date.toLocaleDateString("th-TH", {
         day: "numeric",
         month: "short",
@@ -134,7 +145,7 @@ function HomePage() {
   };
 
   const renderConcertCard = (concert, index) => {
-    const { date } = formatDate(concert.date);
+    const { day, month, year } = formatDate(concert.date);
     const isSoldOut = concert.availableTickets <= 0;
     const isClosed = concert.status !== "open";
 
@@ -156,34 +167,36 @@ function HomePage() {
         </div>
 
         <div className="ticket-right">
-          <h2 className="concert-name">{concert.name}</h2>
-          <p className="artist-name">{concert.artist}</p>
+          {/* ส่วนที่ 1: ชื่อ Concert และ ศิลปิน */}
+          <div className="section-info">
+            <h2 className="concert-name">{concert.name}</h2>
+            <p className="artist-name">{concert.artist}</p>
+          </div>
 
-          <div className="meta-info">
+          {/* ส่วนที่ 2: สถานที่ */}
+          <div className="section-venue">
             <div className="meta-item">
-              {/* เปลี่ยน Emoji เป็นไอคอน */}
-              <FaCalendarAlt className="icon-calendar" />
-              <span>{date}</span>
-            </div>
-            <div className="meta-item">
-              {/* เปลี่ยน Emoji เป็นไอคอน */}
               <FaMapMarkerAlt className="icon-location" />
               <span>{concert.venue}</span>
             </div>
           </div>
 
-          <div className="ticket-action">
-            <div className="price-tag">
-              <span className="currency">฿</span>
-              <span className="amount">{concert.price.toLocaleString()}</span>
+          {/* ส่วนที่ 3: วัน เดือน ปี แยกส่วน */}
+          <div className="section-date">
+            <div className="date-box">
+              <span className="date-day">{day}</span>
+              <span className="date-month">{month}</span>
+              <span className="date-year">{year}</span>
             </div>
+          </div>
 
+          <div className="ticket-action">
             {!isClosed && !isSoldOut ? (
               <button
-                className="book-btn"
+                className="book-btn price-btn-red"
                 onClick={() => handleBooking(concert)}
               >
-                Buy Ticket
+                ฿{concert.price.toLocaleString()}
               </button>
             ) : (
               <button className="book-btn disabled" disabled>
@@ -313,7 +326,7 @@ function HomePage() {
 
         <section className="all-concerts-section">
           <h2 className="section-title">All Concerts</h2>
-          
+
           {/* Search and Filter Bar */}
           <div className="search-filter-bar">
             <div className="search-filter-header">
@@ -353,28 +366,28 @@ function HomePage() {
                 </div>
 
                 <div className="filter-group">
-                  <label>Max Price: ฿{maxPrice.toLocaleString('th-TH')}</label>
+                  <label>Max Price: ฿{maxPrice.toLocaleString("th-TH")}</label>
                   <input
                     type="range"
                     min="0"
                     max="100000"
-                  step="1000"
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(Number(e.target.value))}
-                  className="price-slider"
-                />
-              </div>
+                    step="1000"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(Number(e.target.value))}
+                    className="price-slider"
+                  />
+                </div>
 
-              <button
-                className="reset-btn"
-                onClick={() => {
-                  setSearchTerm("");
-                  setFilterStatus("all");
-                  setMaxPrice(10000);
-                }}
-              >
-                Reset Filters
-              </button>
+                <button
+                  className="reset-btn"
+                  onClick={() => {
+                    setSearchTerm("");
+                    setFilterStatus("all");
+                    setMaxPrice(10000);
+                  }}
+                >
+                  Reset Filters
+                </button>
               </div>
             )}
           </div>
@@ -386,7 +399,7 @@ function HomePage() {
           ) : (
             <div className="concert-list">
               {filteredConcerts.map((concert) =>
-                renderHorizontalConcertCard(concert)
+                renderHorizontalConcertCard(concert),
               )}
             </div>
           )}
