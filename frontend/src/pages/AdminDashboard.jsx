@@ -4,6 +4,27 @@ import axios from "axios";
 import { Search } from "lucide-react";
 import "./AdminDashboard.css";
 
+// --- ฟังก์ชันจัดการ URL รูปภาพ (accessible to all components) ---
+const getImageUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith("http")) return url;
+
+  // แก้ Backslash (\) เป็น Slash (/) เผื่อ path มาจาก Windows
+  const cleanUrl = url.replace(/\\/g, "/");
+
+  // ตรวจสอบและเติม /uploads/ ถ้าจำเป็น
+  const pathWithUploads =
+    cleanUrl.startsWith("uploads") || cleanUrl.startsWith("/uploads")
+      ? cleanUrl.startsWith("/")
+        ? cleanUrl
+        : `/${cleanUrl}`
+      : `/uploads/${cleanUrl.startsWith("/") ? cleanUrl.substring(1) : cleanUrl}`;
+
+  // ชี้ไปที่ Backend Port 5000
+  return `http://localhost:5000${pathWithUploads}`;
+};
+// --------------------------------------------------
+
 function AdminDashboard() {
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
@@ -14,27 +35,6 @@ function AdminDashboard() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-
-  // --- ฟังก์ชันจัดการ URL รูปภาพ (ฉบับแก้ไขสมบูรณ์) ---
-  const getImageUrl = (url) => {
-    if (!url) return null;
-    if (url.startsWith("http")) return url;
-
-    // แก้ Backslash (\) เป็น Slash (/) เผื่อ path มาจาก Windows
-    const cleanUrl = url.replace(/\\/g, "/");
-
-    // ตรวจสอบและเติม /uploads/ ถ้าจำเป็น
-    const pathWithUploads =
-      cleanUrl.startsWith("uploads") || cleanUrl.startsWith("/uploads")
-        ? cleanUrl.startsWith("/")
-          ? cleanUrl
-          : `/${cleanUrl}`
-        : `/uploads/${cleanUrl.startsWith("/") ? cleanUrl.substring(1) : cleanUrl}`;
-
-    // ชี้ไปที่ Backend Port 5000 (ตรวจสอบ Port ของคุณด้วย)
-    return `http://localhost:5000${pathWithUploads}`;
-  };
-  // --------------------------------------------------
 
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
