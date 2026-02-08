@@ -54,8 +54,13 @@ function AdminDashboard() {
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
       const [statsRes, reservationsRes] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/admin/stats`, { headers }),
-        axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/admin/reservations`, { headers }),
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/admin/stats`, {
+          headers,
+        }),
+        axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/api/admin/reservations`,
+          { headers },
+        ),
       ]);
 
       setStats(statsRes.data);
@@ -77,9 +82,12 @@ function AdminDashboard() {
     const newStatus = currentStatus === "open" ? "closed" : "open";
 
     try {
-      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/admin/concerts/${concertId}`, {
-        status: newStatus,
-      });
+      await axios.put(
+        `${import.meta.env.VITE_API_BASE_URL}/api/admin/concerts/${concertId}`,
+        {
+          status: newStatus,
+        },
+      );
       alert(
         `เปลี่ยนสถานะเป็น ${newStatus === "open" ? "เปิดขาย" : "ปิดขาย"} สำเร็จ`,
       );
@@ -95,7 +103,9 @@ function AdminDashboard() {
     if (!confirm("คุณต้องการยกเลิกการจองนี้ใช่หรือไม่?")) return;
 
     try {
-      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/admin/reservations/${reservationId}`);
+      await axios.delete(
+        `${import.meta.env.VITE_API_BASE_URL}/api/admin/reservations/${reservationId}`,
+      );
       alert("ยกเลิกการจองสำเร็จ");
       fetchData();
     } catch (error) {
@@ -107,7 +117,10 @@ function AdminDashboard() {
 
   const handleUpdateConcert = async (concertId, updates) => {
     try {
-      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/admin/concerts/${concertId}`, updates);
+      await axios.put(
+        `${import.meta.env.VITE_API_BASE_URL}/api/admin/concerts/${concertId}`,
+        updates,
+      );
       alert("อัปเดตข้อมูลสำเร็จ");
       setEditingConcert(null);
       fetchData();
@@ -118,25 +131,27 @@ function AdminDashboard() {
     }
   };
 
-  const filteredConcerts =
-    stats?.concerts.filter((concert) => {
-      const matchesSearch =
+  const dashboardConcerts =
+    stats?.concerts?.filter((concert) => {
+      return statusFilter === "all" || concert.status === statusFilter;
+    }) || [];
+
+  const manageConcerts =
+    stats?.concerts?.filter((concert) => {
+      return (
         (concert.name?.toLowerCase() || "").includes(
           searchTerm.toLowerCase(),
         ) ||
-        (concert.artist?.toLowerCase() || "").includes(
-          searchTerm.toLowerCase(),
-        );
-
-      const matchesStatus =
-        statusFilter === "all" || concert.status === statusFilter;
-
-      return matchesSearch && matchesStatus;
+        (concert.artist?.toLowerCase() || "").includes(searchTerm.toLowerCase())
+      );
     }) || [];
 
   const handleCreateConcert = async (concertData) => {
     try {
-      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/admin/concerts`, concertData);
+      await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/admin/concerts`,
+        concertData,
+      );
       alert("สร้างคอนเสิร์ตสำเร็จ");
       setShowCreateForm(false);
       fetchData();
@@ -163,60 +178,55 @@ function AdminDashboard() {
         {/* Header Section */}
         <div className="admin-header">
           <div>
-            <h1>🎛️ Admin Dashboard</h1>
+            <h1>Admin Dashboard</h1>
             <p className="admin-subtitle">ระบบจัดการคอนเสิร์ตและการจอง</p>
           </div>
           <button className="btn btn-danger" onClick={handleLogout}>
             ออกจากระบบ
           </button>
         </div>
-
         {/* Navigation Tabs */}
         <div className="admin-tabs">
           <button
             className={`tab-btn ${activeTab === "dashboard" ? "active" : "inactive"}`}
             onClick={() => setActiveTab("dashboard")}
           >
-            📊 Dashboard
+            Dashboard
           </button>
           <button
             className={`tab-btn ${activeTab === "concerts" ? "active" : "inactive"}`}
             onClick={() => setActiveTab("concerts")}
           >
-            🎵 จัดการคอนเสิร์ต
+            จัดการคอนเสิร์ต
           </button>
           <button
             className={`tab-btn ${activeTab === "reservations" ? "active" : "inactive"}`}
             onClick={() => setActiveTab("reservations")}
           >
-            📋 การจองทั้งหมด
+            การจองทั้งหมด
           </button>
         </div>
-
         {/* Dashboard Content */}
         {activeTab === "dashboard" && (
           <>
             {stats ? (
               <>
                 <div className="stats-grid">
-                  <div className="stat-card stat-blue">
-                    <div className="stat-icon-wrapper stat-blue">🎵</div>
+                  <div className="stat-card">
                     <div className="stat-content">
                       <div className="stat-label">คอนเสิร์ตทั้งหมด</div>
                       <div className="stat-value">{stats.totalConcerts}</div>
                     </div>
                   </div>
 
-                  <div className="stat-card stat-green">
-                    <div className="stat-icon-wrapper stat-green">✅</div>
+                  <div className="stat-card">
                     <div className="stat-content">
                       <div className="stat-label">เปิดขายอยู่</div>
                       <div className="stat-value">{stats.activeConcerts}</div>
                     </div>
                   </div>
 
-                  <div className="stat-card stat-orange">
-                    <div className="stat-icon-wrapper stat-orange">📋</div>
+                  <div className="stat-card">
                     <div className="stat-content">
                       <div className="stat-label">การจองทั้งหมด</div>
                       <div className="stat-value">
@@ -225,8 +235,7 @@ function AdminDashboard() {
                     </div>
                   </div>
 
-                  <div className="stat-card stat-purple">
-                    <div className="stat-icon-wrapper stat-purple">💰</div>
+                  <div className="stat-card">
                     <div className="stat-content">
                       <div className="stat-label">รายได้รวม</div>
                       <div className="stat-value">
@@ -251,33 +260,19 @@ function AdminDashboard() {
                     <div>
                       <h2 style={{ margin: 0 }}>สรุปรายคอนเสิร์ต</h2>
                       <span style={{ fontSize: "14px", color: "#6b7280" }}>
-                        ค้นหาพบ {filteredConcerts.length} รายการ
+                        แสดงข้อมูล {dashboardConcerts.length} รายการ
                       </span>
                     </div>
 
-                    {/* Filter & Search Inputs */}
-                    <div className="filters-container">
-                      <div className="search-wrapper">
-                        <span className="search-icon">
-                          <Search size={18} color="#94a3b8" strokeWidth={2.5} />
-                        </span>
-                        <input
-                          type="text"
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className="search-input"
-                        />
-                      </div>
-                      <select
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                        className="status-select"
-                      >
-                        <option value="all">สถานะทั้งหมด</option>
-                        <option value="open">✅ เปิดขาย</option>
-                        <option value="closed">⛔ ปิดขาย</option>
-                      </select>
-                    </div>
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      className="status-select"
+                    >
+                      <option value="all">สถานะทั้งหมด</option>
+                      <option value="open">✅ เปิดขาย</option>
+                      <option value="closed">⛔ ปิดขาย</option>
+                    </select>
                   </div>
 
                   <div className="table-container">
@@ -285,113 +280,116 @@ function AdminDashboard() {
                       <thead>
                         <tr>
                           <th>คอนเสิร์ต</th>
-                          <th>บัตรทั้งหมด</th>
-                          <th>จองแล้ว</th>
+                          <th>ศิลปิน</th>
+                          <th>วันที่ & สถานที่</th> <th>ราคา</th>
+                          <th>การจอง (ใบ)</th> {/* ปรับรวม */}
                           <th>คงเหลือ</th>
                           <th>รายได้</th>
                           <th>สถานะ</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredConcerts.length > 0 ? (
-                          filteredConcerts.map((concert) => (
+                        {dashboardConcerts.length > 0 ? (
+                          dashboardConcerts.map((concert) => (
                             <tr key={concert.id}>
+                              {/* 1. ชื่อ & รูป */}
                               <td>
                                 <div className="concert-cell">
-                                  <div
-                                    className="concert-thumb-container"
-                                    style={{
-                                      position: "relative",
-                                      width: "200px",
-                                      height: "250px",
-                                    }}
-                                  >
-                                    {concert.imageUrl && (
-                                      <img
-                                        src={getImageUrl(concert.imageUrl)}
-                                        alt={concert.name}
-                                        className="concert-thumb"
-                                        style={{
-                                          width: "100%",
-                                          height: "100%",
-                                          objectFit: "cover",
-                                          borderRadius: "8px",
-                                        }}
-                                        onError={(e) => {
-                                          e.target.style.display = "none";
-                                        }}
-                                      />
-                                    )}
-
-                                    <div
-                                      className="thumb-fallback"
+                                  {concert.imageUrl && (
+                                    <img
+                                      src={getImageUrl(concert.imageUrl)}
+                                      alt={concert.name}
                                       style={{
-                                        position: "absolute",
-                                        top: 0,
-                                        left: 0,
-                                        width: "100%",
-                                        height: "100%",
-                                        backgroundColor: "#e2e8f0",
+                                        width: "60px",
+                                        height: "60px",
+                                        objectFit: "cover",
                                         borderRadius: "8px",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        fontSize: "24px",
-                                        border: "1px solid #cbd5e1",
-                                        zIndex: -1, // ให้ไปอยู่ข้างหลังรูปภาพ
+                                        backgroundColor: "#f1f5f9",
                                       }}
-                                    >
-                                      🎵
-                                    </div>
-                                  </div>
-
-                                  <div className="concert-info-mini">
-                                    <span className="concert-name">
-                                      {concert.name}
-                                    </span>
-                                    <span className="concert-artist">
-                                      {concert.artist}
-                                    </span>
-                                  </div>
+                                      onError={(e) => {
+                                        e.target.style.display = "none";
+                                      }}
+                                    />
+                                  )}
+                                  <span
+                                    className="concert-name"
+                                    style={{ fontWeight: 600 }}
+                                  >
+                                    {concert.name}
+                                  </span>
                                 </div>
                               </td>
+
+                              {/* 2. ศิลปิน */}
+                              <td>{concert.artist}</td>
+
+                              {/* 3. วันที่ & สถานที่ (เช็คค่า date ก่อนแปลง) */}
+                              <td>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    fontSize: "13px",
+                                  }}
+                                >
+                                  <span style={{ fontWeight: 500 }}>
+                                    {concert.date
+                                      ? new Date(
+                                          concert.date,
+                                        ).toLocaleDateString("th-TH", {
+                                          day: "numeric",
+                                          month: "short",
+                                          year: "2-digit",
+                                        })
+                                      : "-"}
+                                  </span>
+                                  <span style={{ color: "#64748b" }}></span>
+                                </div>
+                              </td>
+
+                              {/* 4. ราคา (ใส่ || 0 ป้องกัน Error) */}
+                              <td>฿{(concert.price || 0).toLocaleString()}</td>
+
+                              {/* 5. การจอง */}
                               <td>
                                 <span style={{ fontWeight: 500 }}>
-                                  {concert.totalTickets}
+                                  {concert.bookedTickets || 0}
+                                </span>
+                                <span
+                                  style={{ color: "#94a3b8", fontSize: "12px" }}
+                                >
+                                  {" "}
+                                  / {concert.totalTickets || 0}
                                 </span>
                               </td>
-                              <td>
-                                <span style={{ fontWeight: 500 }}>
-                                  {concert.bookedTickets}
-                                </span>
-                              </td>
+
+                              {/* 6. คงเหลือ */}
                               <td>
                                 <span
                                   style={{
-                                    color:
-                                      concert.availableTickets > 0
-                                        ? "#10b981"
-                                        : "#ef4444",
                                     fontWeight: 600,
-                                    background:
-                                      concert.availableTickets > 0
-                                        ? "#ecfdf5"
-                                        : "#fef2f2",
-                                    padding: "4px 10px",
+                                    padding: "4px 8px",
                                     borderRadius: "6px",
-                                    fontSize: "14px",
+                                    fontSize: "13px",
                                   }}
                                 >
-                                  {concert.availableTickets > 0
+                                  {(concert.availableTickets || 0) > 0
                                     ? concert.availableTickets
                                     : "หมด"}
                                 </span>
                               </td>
+
+                              {/* 7. รายได้ (ใส่ || 0 ป้องกัน Error) */}
                               <td>
-                                <span className="revenue-text">
-                                  ฿{concert.revenue.toLocaleString()}
+                                <span
+                                  className="revenue-text"
+                                  style={{ fontWeight: 700 }}
+                                >
+                                  ฿{(concert.revenue || 0).toLocaleString()}
                                 </span>
                               </td>
+
+                              {/* 8. สถานะ */}
                               <td>
                                 <span
                                   className={`badge ${concert.status === "open" ? "badge-success" : "badge-danger"}`}
@@ -406,14 +404,14 @@ function AdminDashboard() {
                         ) : (
                           <tr>
                             <td
-                              colSpan="6"
+                              colSpan="8"
                               style={{
                                 textAlign: "center",
                                 padding: "40px",
                                 color: "#64748b",
                               }}
                             >
-                              ไม่พบข้อมูลคอนเสิร์ตที่ค้นหา 🕵️‍♂️
+                              ไม่พบข้อมูลคอนเสิร์ต
                             </td>
                           </tr>
                         )}
@@ -436,7 +434,6 @@ function AdminDashboard() {
             )}
           </>
         )}
-
         {/* Concerts Management Content */}
         {activeTab === "concerts" && (
           <div className="card">
@@ -446,20 +443,42 @@ function AdminDashboard() {
                 justifyContent: "space-between",
                 alignItems: "center",
                 marginBottom: "20px",
+                flexWrap: "wrap",
+                gap: "12px",
               }}
             >
               <h2 style={{ margin: 0 }}>จัดการคอนเสิร์ต</h2>
-              <button
-                className={`btn ${showCreateForm ? "btn-secondary" : "btn-success"}`}
-                onClick={() => setShowCreateForm(!showCreateForm)}
+
+              <div
+                style={{ display: "flex", gap: "12px", alignItems: "center" }}
               >
-                {showCreateForm ? "❌ ยกเลิก" : "➕ สร้างคอนเสิร์ตใหม่"}
-              </button>
+                {/* --- ส่วนที่เพิ่ม: ช่องค้นหา --- */}
+                <div className="search-wrapper">
+                  <div className="search-icon">
+                    <Search size={18} />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="ค้นหาชื่อ หรือ ศิลปิน..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="search-input"
+                  />
+                </div>
+                {/* --------------------------- */}
+
+                <button
+                  className={`btn ${showCreateForm ? "btn-secondary" : "btn-success"}`}
+                  onClick={() => setShowCreateForm(!showCreateForm)}
+                >
+                  {showCreateForm ? "ยกเลิก" : "สร้าง"}
+                </button>
+              </div>
             </div>
 
             {showCreateForm && (
               <div className="create-form-container">
-                <h3 style={{ marginTop: 0 }}>สร้างคอนเสิร์ตใหม่</h3>
+                <h3 style={{ marginTop: 0 }}>สร้าง</h3>
                 <CreateConcertForm
                   onSave={handleCreateConcert}
                   onCancel={() => setShowCreateForm(false)}
@@ -469,80 +488,130 @@ function AdminDashboard() {
 
             {stats ? (
               <>
-                {stats.concerts.map((concert) => (
-                  <div key={concert.id} className="concert-item">
-                    {editingConcert?.id === concert.id ? (
-                      <EditConcertForm
-                        concert={editingConcert}
-                        onSave={(updates) =>
-                          handleUpdateConcert(concert.id, updates)
-                        }
-                        onCancel={() => setEditingConcert(null)}
-                      />
-                    ) : (
-                      <>
-                        {/* 1. รูปปกคอนเสิร์ต (จะอยู่ซ้ายสุด) */}
-                        {concert.imageUrl && (
-                          <div className="concert-image-container">
-                            <img
-                              src={getImageUrl(concert.imageUrl)}
-                              alt={concert.name}
-                              onError={(e) => {
-                                e.target.style.display = "none";
-                              }}
-                            />
-                          </div>
-                        )}
-
-                        {/* 2. ส่วนรายละเอียดและปุ่มจัดการ (จะอยู่ขวา) */}
-                        <div className="concert-item-right">
-                          <div className="concert-details">
-                            <div className="concert-info">
-                              <h3>{concert.name}</h3>
-                              <p className="concert-meta">
-                                รหัส: {concert.id} | บัตรทั้งหมด:{" "}
-                                {concert.totalTickets} | จองแล้ว:{" "}
-                                {concert.bookedTickets} | คงเหลือ:{" "}
-                                {concert.availableTickets}
-                              </p>
+                {manageConcerts.length > 0 ? (
+                  manageConcerts.map((concert) => (
+                    <div key={concert.id} className="concert-item">
+                      {editingConcert?.id === concert.id ? (
+                        <EditConcertForm
+                          concert={editingConcert}
+                          onSave={(updates) =>
+                            handleUpdateConcert(concert.id, updates)
+                          }
+                          onCancel={() => setEditingConcert(null)}
+                        />
+                      ) : (
+                        <>
+                          {/* 1. รูปปกคอนเสิร์ต */}
+                          {concert.imageUrl && (
+                            <div className="concert-image-container">
+                              <img
+                                src={getImageUrl(concert.imageUrl)}
+                                alt={concert.name}
+                                onError={(e) => {
+                                  e.target.style.display = "none";
+                                }}
+                              />
                             </div>
-                            <span
-                              className={`badge ${concert.status === "open" ? "badge-success" : "badge-danger"}`}
-                            >
-                              {concert.status === "open" ? "เปิดขาย" : "ปิดขาย"}
-                            </span>
-                          </div>
+                          )}
 
-                          <div className="concert-actions">
-                            <button
-                              className="btn btn-secondary"
-                              onClick={() => setEditingConcert(concert)}
-                            >
-                              แก้ไขข้อมูล
-                            </button>
-                            <button
-                              className={`btn ${concert.status === "open" ? "btn-danger" : "btn-success"}`}
-                              onClick={() =>
-                                handleToggleStatus(concert.id, concert.status)
-                              }
-                            >
-                              {concert.status === "open"
-                                ? "ปิดการขาย"
-                                : "เปิดการขาย"}
-                            </button>
+                          {/* 2. ส่วนรายละเอียดและปุ่มจัดการ */}
+                          <div className="concert-item-right">
+                            <div className="concert-details">
+                              <div className="concert-info">
+                                <h3 style={{ margin: "0 0 8px 0" }}>
+                                  {concert.name}
+                                </h3>
+
+                                {/* --- ส่วนที่เพิ่ม: ศิลปิน และ สถานที่ --- */}
+                                <div
+                                  style={{
+                                    marginBottom: "8px",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: "4px",
+                                  }}
+                                >
+                                  {concert.artist && (
+                                    <span
+                                      style={{
+                                        fontSize: "1rem",
+                                        fontWeight: "500",
+                                        color: "#333",
+                                      }}
+                                    >
+                                      {concert.artist}
+                                    </span>
+                                  )}
+                                  {concert.venue && (
+                                    <span
+                                      style={{
+                                        fontSize: "0.9rem",
+                                        color: "#666",
+                                      }}
+                                    >
+                                      {concert.venue}
+                                    </span>
+                                  )}
+                                </div>
+
+                                <p className="concert-meta">
+                                  รหัส: {concert.id} | บัตรทั้งหมด:{" "}
+                                  {concert.totalTickets} | จองแล้ว:{" "}
+                                  {concert.bookedTickets} | คงเหลือ:{" "}
+                                  {concert.availableTickets}
+                                </p>
+                              </div>
+                              <span
+                                className={`badge ${
+                                  concert.status === "open"
+                                    ? "badge-success"
+                                    : "badge-danger"
+                                }`}
+                              >
+                                {concert.status === "open"
+                                  ? "เปิดขาย"
+                                  : "ปิดขาย"}
+                              </span>
+                            </div>
+
+                            <div className="concert-actions">
+                              <button
+                                className="btn btn-secondary"
+                                onClick={() => setEditingConcert(concert)}
+                              >
+                                แก้ไขข้อมูล
+                              </button>
+                              <button
+                                className={`btn ${
+                                  concert.status === "open"
+                                    ? "btn-danger"
+                                    : "btn-success"
+                                }`}
+                                onClick={() =>
+                                  handleToggleStatus(concert.id, concert.status)
+                                }
+                              >
+                                {concert.status === "open"
+                                  ? "ปิดการขาย"
+                                  : "เปิดการขาย"}
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                ))}
+                        </>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  /* เพิ่ม: กรณีไม่มีรายการคอนเสิร์ต (ปิดเงื่อนไข manageConcerts.length > 0) */
+                  <div className="no-data">ไม่พบข้อมูลคอนเสิร์ต</div>
+                )}
               </>
             ) : (
-              <div className="loading-state">กำลังโหลดข้อมูล...</div>
+              /* เพิ่ม: กรณี stats ยังไม่โหลด (ปิดเงื่อนไข stats ?) */
+              <div className="loading">กำลังโหลดข้อมูล...</div>
             )}
           </div>
-        )}
-
+        )}{" "}
         {/* Reservations Content */}
         {activeTab === "reservations" && (
           <div className="card">
@@ -617,7 +686,7 @@ function EditConcertForm({ concert, onSave, onCancel }) {
   const [formData, setFormData] = useState({
     name: concert?.name ?? "",
     artist: concert?.artist ?? "",
-    date: formatDateForInput(concert?.date), 
+    date: formatDateForInput(concert?.date),
     venue: concert?.venue ?? "",
     totalTickets: concert?.totalTickets ?? 0,
     price: concert?.price ?? 0,
@@ -636,9 +705,13 @@ function EditConcertForm({ concert, onSave, onCancel }) {
     formDataObj.append("file", file);
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/upload`, formDataObj, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/upload`,
+        formDataObj,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      );
       setFormData({ ...formData, imageUrl: response.data.url });
       setError("");
     } catch (err) {
@@ -777,7 +850,7 @@ function EditConcertForm({ concert, onSave, onCancel }) {
           />
         </div>
         <div className="input-group" style={{ gridColumn: "1 / -1" }}>
-          <label>📤 อัพโหลดรูปภาพ</label>
+          <label>อัพโหลดรูปภาพ</label>
           <input
             type="file"
             accept="image/*"
@@ -859,9 +932,13 @@ function CreateConcertForm({ onSave, onCancel }) {
     formDataObj.append("file", file);
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/upload`, formDataObj, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/upload`,
+        formDataObj,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      );
       setFormData({ ...formData, imageUrl: response.data.url });
       setError("");
     } catch (err) {
@@ -989,7 +1066,7 @@ function CreateConcertForm({ onSave, onCancel }) {
           />
         </div>
         <div className="input-group" style={{ gridColumn: "1 / -1" }}>
-          <label>📤 อัพโหลดรูปภาพ *</label>
+          <label>อัพโหลดรูปภาพ *</label>
           <input
             type="file"
             accept="image/*"
@@ -1043,7 +1120,7 @@ function CreateConcertForm({ onSave, onCancel }) {
           className="btn btn-success"
           disabled={loading || uploading}
         >
-          {loading ? "⏳ กำลังสร้าง..." : "✅ สร้างคอนเสิร์ต"}
+          {loading ? "กำลังสร้าง..." : "สร้างคอนเสิร์ต"}
         </button>
         <button type="button" className="btn btn-secondary" onClick={onCancel}>
           ยกเลิก
