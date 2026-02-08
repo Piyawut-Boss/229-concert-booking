@@ -70,6 +70,29 @@ app.use((req, res, next) => {
 // Serve uploaded files as static assets
 app.use('/uploads', express.static(uploadsDir));
 
+// ========== Health Check Endpoint (for Railway) ==========
+app.get('/api/health', async (req, res) => {
+  try {
+    const dbHealthy = await db.testConnection();
+    
+    res.status(dbHealthy ? 200 : 503).json({
+      status: dbHealthy ? 'healthy' : 'unhealthy',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: process.env.NODE_ENV || 'development',
+      database: dbHealthy ? 'connected' : 'disconnected',
+      version: '1.0.0'
+    });
+  } catch (error) {
+    res.status(503).json({
+      status: 'unhealthy',
+      timestamp: new Date().toISOString(),
+      error: error.message,
+      environment: process.env.NODE_ENV || 'development'
+    });
+  }
+});
+
 // ========== Database Lock Mechanism ==========
 // Using in-memory locks for distributed concurrency control
 const locks = new Map();
