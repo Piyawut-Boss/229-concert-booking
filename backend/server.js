@@ -61,7 +61,8 @@ const upload = multer({
 // Middleware
 const allowedOrigins = [
   'https://exemplary-warmth-production-9820.up.railway.app',
-  'http://localhost:3000'
+  'http://localhost:3000',
+  'http://localhost:5173'
 ];
 
 app.use(cors({
