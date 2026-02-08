@@ -279,7 +279,7 @@ function HomePage() {
       <div className="container">
         <section className="recommend-section">
           <div className="section-header">
-            <h2 className="section-title">Recommended for You</h2>
+            <h2 className="section-title">แนะนำสำหรับคุณ</h2>
           </div>
           <div className="slider-wrapper">
             <button className="nav-btn prev-btn" onClick={slideLeft}>
@@ -325,7 +325,7 @@ function HomePage() {
         </section>
 
         <section className="all-concerts-section">
-          <h2 className="section-title">All Concerts</h2>
+          <h2 className="section-title">รายการคอนเสิร์ต</h2>
 
           {/* Search and Filter Bar */}
           <div className="search-filter-bar">
