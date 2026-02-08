@@ -22,7 +22,7 @@ function AppContent() {
           <Link to="/" className="nav-brand">
             <img src={logo} alt="Logo" className="nav-logo" />
 
-            <span>Concert Ticket System</span>
+            <span>Concert Ticket</span>
           </Link>
           <div className="nav-links">
             <Link to="/" className="nav-link">
