@@ -2,7 +2,11 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "dockerfile",
-    "dockerfile": "frontend/Dockerfile"
+    "dockerfile": "frontend/Dockerfile",
+    "buildArgs": {
+      "VITE_API_BASE_URL": "https://concert-booking-production.railway.app",
+      "VITE_GOOGLE_CLIENT_ID": "164061782280-6nl35e4kcagntgu622iqgl2i0hjfcf31.apps.googleusercontent.com"
+    }
   },
   "deploy": {
     "restartPolicyType": "on_failure",
