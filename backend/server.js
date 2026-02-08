@@ -543,6 +543,7 @@ app.post('/api/admin/login', async (req, res) => {
     );
 
     if (result.rows.length === 0) {
+      console.log(`[ADMIN] Login attempt for non-existent user: ${username}`);
       // Delay response to prevent timing attacks
       await new Promise(resolve => setTimeout(resolve, 500));
       return res.status(401).json({ error: 'Invalid username or password' });
@@ -564,6 +565,7 @@ app.post('/api/admin/login', async (req, res) => {
     }
 
     if (!passwordMatch) {
+      console.log(`[ADMIN] Invalid password for user: ${username}`);
       return res.status(401).json({ error: 'Invalid username or password' });
     }
 
@@ -582,9 +584,35 @@ app.post('/api/admin/login', async (req, res) => {
     });
   } catch (error) {
     console.error('Admin login error:', error);
-    res.status(500).json({ error: 'Login failed' });
+    res.status(500).json({ error: 'Login failed: ' + error.message });
   }
 });
+
+// Verify admin user exists - create if needed
+app.post('/api/admin/verify-user', async (req, res) => {
+  try {
+    const result = await db.query(
+      'SELECT id FROM admin_users WHERE username = $1',
+      ['admin']
+    );
+
+    if (result.rows.length === 0) {
+      // Create admin user if it doesn't exist
+      await db.query(
+        'INSERT INTO admin_users (username, password, role) VALUES ($1, $2, $3)',
+        ['admin', 'admin123', 'admin']
+      );
+      console.log('[ADMIN] Created default admin user');
+      return res.json({ exists: false, created: true, message: 'Admin user created' });
+    }
+    
+    res.json({ exists: true, message: 'Admin user exists' });
+  } catch (error) {
+    console.error('Admin verify error:', error);
+    res.status(500).json({ error: 'Verification failed: ' + error.message });
+  }
+});
+
 
 // Admin: Get all reservations
 app.get('/api/admin/reservations', async (req, res) => {
