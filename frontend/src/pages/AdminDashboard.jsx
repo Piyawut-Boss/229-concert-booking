@@ -9,7 +9,6 @@ const getImageUrl = (url) => {
   if (!url) return null;
   if (url.startsWith("http")) return url;
 
-  // แก้ Backslash (\) เป็น Slash (/) เผื่อ path มาจาก Windows
   const cleanUrl = url.replace(/\\/g, "/");
 
   // ตรวจสอบและเติม /uploads/ ถ้าจำเป็น
@@ -20,8 +19,7 @@ const getImageUrl = (url) => {
         : `/${cleanUrl}`
       : `/uploads/${cleanUrl.startsWith("/") ? cleanUrl.substring(1) : cleanUrl}`;
 
-  // ชี้ไปที่ Backend Port 5000
-  return `http://localhost:5000${pathWithUploads}`;
+  return `${import.meta.env.VITE_API_BASE_URL}${pathWithUploads}`;
 };
 // --------------------------------------------------
 

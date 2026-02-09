@@ -5,7 +5,4 @@ window.__CONCERT_CONFIG__ = {
   VITE_TURNSTILE_SITE_KEY: '0x4AAAAAAACY7SOAVZF09WFXk'
 };
 
-console.log('=== Concert Config Loaded ===');
-console.log('API Base URL:', window.__CONCERT_CONFIG__.VITE_API_BASE_URL);
-console.log('Turnstile Key:', window.__CONCERT_CONFIG__.VITE_TURNSTILE_SITE_KEY);
-console.log('============================');
+
