@@ -350,7 +350,7 @@ function MyReservations() {
                             color: concertDetails.status === 'open' ? '#10b981' : '#ef4444',
                             fontWeight: '700'
                           }}>
-                            {concertDetails.status === 'open' ? '📅 เปิดจอง' : '❌ ปิดจอง'}
+                            {concertDetails.status === 'open' ? 'เปิดจอง' : 'ปิดจอง'}
                           </p>
                         </div>
                       </div>

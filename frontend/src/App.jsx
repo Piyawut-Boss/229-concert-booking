@@ -79,7 +79,7 @@ function AppContent() {
           </p>
           {!admin && (
             <p style={{ marginTop: "16px", paddingTop: "16px", borderTop: "1px solid rgba(0, 0, 0, 0.1)" }}>
-              <Link to="/admin" style={{ color: "#6b7280", textDecoration: "none", fontWeight: 600 }}>
+              <Link to="/admin" style={{ color: "#6b7280", textDecoration: "none", fontWeight: 200 }}>
                 Admin Login
               </Link>
             </p>

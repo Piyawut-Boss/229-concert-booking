@@ -1,21 +1,8 @@
 /**
  * Email Service Module
- * 
- * Purpose: Handle all email communications for the Concert Ticket System
+ * * Purpose: Handle all email communications for the Concert Ticket System
  * - Login confirmation emails for OAuth users
  * - Booking confirmation emails with reservation details
- * 
- * Architecture:
- * - Sender: EMAIL_USER from .env (Gmail account with App Password)
- * - Recipient: User's actual email (from Google OAuth or booking form)
- * - Transport: Gmail SMTP via Nodemailer with OAuth credentials
- * 
- * Configuration (.env requirements):
- * - EMAIL_USER: Gmail address (e.g., 6710110264@psu.ac.th)
- * - EMAIL_PASSWORD: Gmail App Password (16 characters)
- * - EMAIL_FROM: Display name for sender (e.g., noreply@concertticket.com)
- * - SEND_LOGIN_EMAIL: Enable/disable login emails (default: true)
- * - SEND_BOOKING_EMAIL: Enable/disable booking emails (default: true)
  */
 
 const nodemailer = require('nodemailer');
@@ -27,19 +14,26 @@ let transporter = null;
 function initializeTransporter() {
   // Check if using Gmail with App Password
   if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
+    console.log('[EMAIL] ⚙️ Configuring Gmail Transporter (Port 465)...');
     transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',  // ระบุ Host โดยตรง
+      port: 465,               // ใช้ Port 465 (SSL) จะเสถียรกว่าบน Cloud
+      secure: true,            // บังคับใช้ SSL
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASSWORD
-      }
+      },
+      // เพิ่ม Timeout ป้องกันการค้างนานเกินไป
+      connectionTimeout: 10000, 
+      greetingTimeout: 10000,
+      socketTimeout: 10000
     });
   } else if (process.env.SMTP_HOST && process.env.SMTP_PORT) {
     // Or use custom SMTP server
     transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: process.env.SMTP_PORT,
-      secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+      secure: process.env.SMTP_SECURE === 'true',
       auth: process.env.SMTP_USER && process.env.SMTP_PASSWORD ? {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD
@@ -57,7 +51,9 @@ if (!transporter) {
 
 // Login Success Email Template
 function getLoginEmailTemplate(userName, email) {
+  // ใช้ FRONTEND_URL จาก ENV ถ้ามี ไม่งั้นใช้ localhost
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  // ใช้ Logo จาก Frontend URL
   const logoUrl = `${frontendUrl}/assets/WaveLogo.png`;
   
   return {
@@ -246,29 +242,8 @@ function getBookingEmailTemplate(customerName, email, reservation, concert) {
   };
 }
 
-/**
- * Send login confirmation email to authenticated user
- * 
- * @param {string} userName - User's display name (from Google OAuth)
- * @param {string} userEmail - User's email address (from Google OAuth)
- * @returns {Promise<boolean>} - True if email sent successfully, false otherwise
- * 
- * @example
- * // When user logs in via Google OAuth
- * const result = await sendLoginEmail('Alice Smith', 'alice@gmail.com');
- * // Email sent FROM: noreply@concertticket.com
- * // Email sent TO: alice@gmail.com
- * 
- * Flow:
- * 1. Validate email transporter is configured
- * 2. Generate HTML email template with personalized content
- * 3. Send email via Gmail SMTP
- * 4. Log message ID for tracking
- * 5. Return success/failure status
- */
 async function sendLoginEmail(userName, userEmail) {
   try {
-    // Validate prerequisites
     if (!transporter) {
       console.log('[EMAIL] ⚠️ Email transporter not configured. Skipping login email.');
       return false;
@@ -283,58 +258,23 @@ async function sendLoginEmail(userName, userEmail) {
     
     const mailOptions = {
       from: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@concertticket.com',
-      to: userEmail,  // CRITICAL: Send to user's email, not EMAIL_USER
+      to: userEmail,
       subject: emailTemplate.subject,
       html: emailTemplate.html
     };
 
     const info = await transporter.sendMail(mailOptions);
     console.log(`[EMAIL] ✅ Login email sent successfully`);
-    console.log(`        └─ From: ${mailOptions.from}`);
     console.log(`        └─ To: ${userEmail}`);
-    console.log(`        └─ Message ID: ${info.messageId}`);
     return true;
   } catch (error) {
     console.error(`[EMAIL] ❌ Error sending login email to ${userEmail}:`, error.message);
-    console.error(`        └─ Error details:`, error.code || error.response?.message);
     return false;
   }
 }
 
-/**
- * Send booking confirmation email to customer
- * 
- * @param {Object} reservation - Booking reservation object
- * @param {string} reservation.id - Unique reservation ID
- * @param {string} reservation.customerName - Customer's name
- * @param {string} reservation.customerEmail - Customer's email address
- * @param {number} reservation.quantity - Number of tickets booked
- * @param {number} reservation.totalPrice - Total booking price
- * @param {Object} concert - Concert details object
- * @param {string} concert.name - Concert name
- * @param {string} concert.artist - Artist/performer name
- * @param {string} concert.date - Concert date
- * @param {string} concert.venue - Venue location
- * @returns {Promise<boolean>} - True if email sent successfully, false otherwise
- * 
- * @example
- * // When user books tickets
- * const result = await sendBookingConfirmationEmail(
- *   { id: 'RES123', customerName: 'Alice', customerEmail: 'alice@gmail.com', quantity: 2, totalPrice: 1000 },
- *   { name: 'Concert XYZ', artist: 'Artist ABC', date: '2026-02-20', venue: 'Bangkok' }
- * );
- * // Email sent FROM: noreply@concertticket.com
- * // Email sent TO: alice@gmail.com (not system email)
- * 
- * Flow:
- * 1. Validate email transporter and input data
- * 2. Generate professional HTML email with reservation details
- * 3. Send via Gmail SMTP
- * 4. Log transaction for audit trail
- */
 async function sendBookingConfirmationEmail(reservation, concert) {
   try {
-    // Validate prerequisites
     if (!transporter) {
       console.log('[EMAIL] ⚠️ Email transporter not configured. Skipping booking email.');
       return false;
@@ -354,47 +294,22 @@ async function sendBookingConfirmationEmail(reservation, concert) {
 
     const mailOptions = {
       from: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@concertticket.com',
-      to: reservation.customerEmail,  // CRITICAL: Send to customer's email, not EMAIL_USER
+      to: reservation.customerEmail,
       subject: emailTemplate.subject,
       html: emailTemplate.html
     };
 
     const info = await transporter.sendMail(mailOptions);
     console.log(`[EMAIL] ✅ Booking confirmation email sent successfully`);
-    console.log(`        └─ From: ${mailOptions.from}`);
     console.log(`        └─ To: ${reservation.customerEmail}`);
     console.log(`        └─ Reservation: ${reservation.id}`);
-    console.log(`        └─ Concert: ${concert.name}`);
-    console.log(`        └─ Message ID: ${info.messageId}`);
     return true;
   } catch (error) {
     console.error(`[EMAIL] ❌ Error sending booking email to ${reservation.customerEmail}:`, error.message);
-    console.error(`        └─ Reservation ID: ${reservation.id}`);
-    console.error(`        └─ Error details:`, error.code || error.response?.message);
     return false;
   }
 }
 
-/**
- * Verify email transporter configuration
- * 
- * Used during application startup to ensure email credentials are valid
- * and the SMTP connection can be established with Gmail
- * 
- * @returns {Promise<boolean>} - True if configured correctly, false otherwise
- * 
- * Checks:
- * - EMAIL_USER and EMAIL_PASSWORD are set in .env
- * - Gmail SMTP connection is reachable
- * - Authentication credentials are valid
- * 
- * @example
- * if (await testEmailConfiguration()) {
- *   console.log('Email system ready to send notifications');
- * } else {
- *   console.log('Email system unavailable');
- * }
- */
 async function testEmailConfiguration() {
   try {
     if (!transporter) {
@@ -402,19 +317,12 @@ async function testEmailConfiguration() {
       return false;
     }
 
-    // Verify SMTP connection and credentials
     await transporter.verify();
     console.log('[EMAIL] ✅ Email configuration verified successfully');
-    console.log(`        └─ Sender: ${process.env.EMAIL_FROM || process.env.EMAIL_USER}`);
-    console.log(`        └─ SMTP: Gmail (${process.env.EMAIL_USER})`);
-    console.log(`        └─ Status: Ready to send emails`);
+    console.log(`        └─ SMTP: Gmail (Port 465 SSL)`);
     return true;
   } catch (error) {
     console.error('[EMAIL] ❌ Email configuration error:', error.message);
-    console.error('[EMAIL] ⚠️  Check your .env file:');
-    console.error(`        - EMAIL_USER: ${process.env.EMAIL_USER ? '✓ Set' : '✗ Missing'}`);
-    console.error(`        - EMAIL_PASSWORD: ${process.env.EMAIL_PASSWORD ? '✓ Set' : '✗ Missing'}`);
-    console.error(`        - EMAIL_FROM: ${process.env.EMAIL_FROM ? '✓ Set' : '✗ Missing'}`);
     return false;
   }
 }
