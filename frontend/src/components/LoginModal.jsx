@@ -5,14 +5,16 @@ import { FaTimes } from 'react-icons/fa'
 import Turnstile from 'react-turnstile'
 import logo from '../../assets/WaveLogo.png'
 
-// Log environment variables for debugging
-console.log('VITE_TURNSTILE_SITE_KEY:', import.meta.env.VITE_TURNSTILE_SITE_KEY)
-
 function LoginModal({ isOpen, onClose }) {
   const [captchaToken, setCaptchaToken] = useState(null)
   const [captchaError, setCaptchaError] = useState(false)
 
-  const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY || '0x4AAAAAAACY7SOAVZF09WFXk'
+  // Get Turnstile key from global config or environment
+  const siteKey = window.__CONCERT_CONFIG__?.VITE_TURNSTILE_SITE_KEY || 
+                  import.meta.env.VITE_TURNSTILE_SITE_KEY || 
+                  '0x4AAAAAAACY7SOAVZF09WFXk'
+  
+  console.log('LoginModal - Using Turnstile Site Key:', siteKey)
 
   const handleCaptchaChange = (token) => {
     setCaptchaToken(token)

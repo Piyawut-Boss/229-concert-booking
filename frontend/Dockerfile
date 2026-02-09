@@ -21,12 +21,19 @@ RUN npm install
 # Copy source code
 COPY . .
 
-# Create .env.production file with build variables for Vite
-RUN echo "VITE_API_BASE_URL=${VITE_API_BASE_URL}" > .env.production && \
-    echo "VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID}" >> .env.production && \
-    echo "VITE_TURNSTILE_SITE_KEY=${VITE_TURNSTILE_SITE_KEY}" >> .env.production && \
-    echo "=== .env.production contents ===" && \
-    cat .env.production
+# Generate config.js with actual environment variables
+RUN mkdir -p public && \
+    echo "window.__CONCERT_CONFIG__ = {" > public/config.js && \
+    echo "  VITE_API_BASE_URL: '${VITE_API_BASE_URL}'," >> public/config.js && \
+    echo "  VITE_GOOGLE_CLIENT_ID: '${VITE_GOOGLE_CLIENT_ID}'," >> public/config.js && \
+    echo "  VITE_TURNSTILE_SITE_KEY: '${VITE_TURNSTILE_SITE_KEY}'" >> public/config.js && \
+    echo "};" >> public/config.js && \
+    echo "" >> public/config.js && \
+    echo "console.log('=== Concert Config Loaded ===' );" >> public/config.js && \
+    echo "console.log('Turnstile Key:', window.__CONCERT_CONFIG__.VITE_TURNSTILE_SITE_KEY);" >> public/config.js && \
+    echo "console.log('============================');" >> public/config.js && \
+    echo "=== Generated config.js ===" && \
+    cat public/config.js
 
 # Build application
 RUN npm run build
