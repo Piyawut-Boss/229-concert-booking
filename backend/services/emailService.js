@@ -14,28 +14,43 @@ let transporter = null;
 function initializeTransporter() {
   // Check if using Gmail with App Password
   if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
-    console.log("[EMAIL] ⚙️ Configuring Gmail Transporter (IPv4 Forced)...");
+    console.log(
+      "[EMAIL] ⚙️ Configuring Gmail Transporter (Port 587 STARTTLS)...",
+    );
 
     transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
-      port: 465,
-      secure: true, // ใช้ SSL
+      port: 587, // [แก้ไข 1] เปลี่ยนจาก 465 เป็น 587
+      secure: false, // [แก้ไข 2] ต้องเป็น false สำหรับ Port 587
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASSWORD,
       },
-      // --- ส่วนสำคัญที่ต้องเพิ่ม ---
-      // 1. บังคับใช้ IPv4 (แก้ปัญหา Timeout บน Cloud)
-      family: 4,
-      // 2. เพิ่มเวลา Timeout เป็น 30 วินาที (เผื่อ Network ช้า)
-      connectionTimeout: 30000,
+      tls: {
+        // [แก้ไข 3] ยอมรับ Self-signed cert (ช่วยลดปัญหา SSL บน Cloud)
+        rejectUnauthorized: false,
+      },
+      family: 4, // [คงไว้] บังคับ IPv4
+      connectionTimeout: 60000, // [แก้ไข 4] เพิ่มเวลารอเป็น 60 วินาที
       greetingTimeout: 30000,
-      socketTimeout: 30000,
-      // 3. เปิด Log ให้ละเอียดขึ้น
+      socketTimeout: 60000,
       logger: true,
       debug: false,
     });
   } else if (process.env.SMTP_HOST && process.env.SMTP_PORT) {
+    // ... (ส่วนเดิม)
+    transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT,
+      secure: process.env.SMTP_SECURE === "true",
+      auth:
+        process.env.SMTP_USER && process.env.SMTP_PASSWORD
+          ? {
+              user: process.env.SMTP_USER,
+              pass: process.env.SMTP_PASSWORD,
+            }
+          : undefined,
+    });
   }
 
   return transporter;
