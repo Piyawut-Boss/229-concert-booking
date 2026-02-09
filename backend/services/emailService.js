@@ -5,7 +5,7 @@
  * - Booking confirmation emails with reservation details
  */
 
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
 
 // Initialize email transporter - singleton pattern
 let transporter = null;
@@ -14,31 +14,28 @@ let transporter = null;
 function initializeTransporter() {
   // Check if using Gmail with App Password
   if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
-    console.log('[EMAIL] ⚙️ Configuring Gmail Transporter (Port 465)...');
+    console.log("[EMAIL] ⚙️ Configuring Gmail Transporter (IPv4 Forced)...");
+
     transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',  // ระบุ Host โดยตรง
-      port: 465,               // ใช้ Port 465 (SSL) จะเสถียรกว่าบน Cloud
-      secure: true,            // บังคับใช้ SSL
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true, // ใช้ SSL
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
+        pass: process.env.EMAIL_PASSWORD,
       },
-      // เพิ่ม Timeout ป้องกันการค้างนานเกินไป
-      connectionTimeout: 10000, 
-      greetingTimeout: 10000,
-      socketTimeout: 10000
+      // --- ส่วนสำคัญที่ต้องเพิ่ม ---
+      // 1. บังคับใช้ IPv4 (แก้ปัญหา Timeout บน Cloud)
+      family: 4,
+      // 2. เพิ่มเวลา Timeout เป็น 30 วินาที (เผื่อ Network ช้า)
+      connectionTimeout: 30000,
+      greetingTimeout: 30000,
+      socketTimeout: 30000,
+      // 3. เปิด Log ให้ละเอียดขึ้น
+      logger: true,
+      debug: false,
     });
   } else if (process.env.SMTP_HOST && process.env.SMTP_PORT) {
-    // Or use custom SMTP server
-    transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: process.env.SMTP_USER && process.env.SMTP_PASSWORD ? {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD
-      } : undefined
-    });
   }
 
   return transporter;
@@ -52,12 +49,12 @@ if (!transporter) {
 // Login Success Email Template
 function getLoginEmailTemplate(userName, email) {
   // ใช้ FRONTEND_URL จาก ENV ถ้ามี ไม่งั้นใช้ localhost
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
   // ใช้ Logo จาก Frontend URL
   const logoUrl = `${frontendUrl}/assets/WaveLogo.png`;
-  
+
   return {
-    subject: 'เข้าสู่ระบบสำเร็จ - Concert Ticket System',
+    subject: "เข้าสู่ระบบสำเร็จ - Concert Ticket System",
     html: `
       <!DOCTYPE html>
       <html>
@@ -100,7 +97,7 @@ function getLoginEmailTemplate(userName, email) {
 
             <div class="info-block">
               <div class="info-label">เวลา:</div>
-              <div class="info-value">${new Date().toLocaleString('th-TH')}</div>
+              <div class="info-value">${new Date().toLocaleString("th-TH")}</div>
             </div>
 
             <p>คุณสามารถจองบัตรคอนเสิร์ตของคุณได้ทันทีหลังจากเข้าสู่ระบบ</p>
@@ -123,15 +120,15 @@ function getLoginEmailTemplate(userName, email) {
         </div>
       </body>
       </html>
-    `
+    `,
   };
 }
 
 // Booking Success Email Template
 function getBookingEmailTemplate(customerName, email, reservation, concert) {
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
   const logoUrl = `${frontendUrl}/assets/WaveLogo.png`;
-  
+
   return {
     subject: `การจองสำเร็จ - ${concert.name} - Confirmation #${reservation.id}`,
     html: `
@@ -181,7 +178,7 @@ function getBookingEmailTemplate(customerName, email, reservation, concert) {
               <h3>ข้อมูลคอนเสิร์ต</h3>
               <div style="margin: 12px 0; color: #555;"><strong style="color: #be185d;">ชื่อคอนเสิร์ต:</strong> ${concert.name}</div>
               <div style="margin: 12px 0; color: #555;"><strong style="color: #be185d;">ศิลปิน:</strong> ${concert.artist}</div>
-              <div style="margin: 12px 0; color: #555;"><strong style="color: #be185d;">วันที่:</strong> ${new Date(concert.date).toLocaleDateString('th-TH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+              <div style="margin: 12px 0; color: #555;"><strong style="color: #be185d;">วันที่:</strong> ${new Date(concert.date).toLocaleDateString("th-TH", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</div>
               <div style="margin: 12px 0; color: #555;"><strong style="color: #be185d;">สถานที่:</strong> ${concert.venue}</div>
             </div>
 
@@ -210,7 +207,7 @@ function getBookingEmailTemplate(customerName, email, reservation, concert) {
               <div class="detail-row" style="border-bottom: none;">
                 <span class="detail-label">สถานะ:</span>
                 <span class="status-badge">
-                  ${reservation.status === 'confirmed' ? 'ยืนยันแล้ว' : reservation.status}
+                  ${reservation.status === "confirmed" ? "ยืนยันแล้ว" : reservation.status}
                 </span>
               </div>
             </div>
@@ -238,29 +235,34 @@ function getBookingEmailTemplate(customerName, email, reservation, concert) {
         </div>
       </body>
       </html>
-    `
+    `,
   };
 }
 
 async function sendLoginEmail(userName, userEmail) {
   try {
     if (!transporter) {
-      console.log('[EMAIL] ⚠️ Email transporter not configured. Skipping login email.');
+      console.log(
+        "[EMAIL] ⚠️ Email transporter not configured. Skipping login email.",
+      );
       return false;
     }
 
     if (!userEmail || !userName) {
-      console.error('[EMAIL] ❌ Missing required parameters for login email');
+      console.error("[EMAIL] ❌ Missing required parameters for login email");
       return false;
     }
 
     const emailTemplate = getLoginEmailTemplate(userName, userEmail);
-    
+
     const mailOptions = {
-      from: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@concertticket.com',
+      from:
+        process.env.EMAIL_FROM ||
+        process.env.EMAIL_USER ||
+        "noreply@concertticket.com",
       to: userEmail,
       subject: emailTemplate.subject,
-      html: emailTemplate.html
+      html: emailTemplate.html,
     };
 
     const info = await transporter.sendMail(mailOptions);
@@ -268,7 +270,10 @@ async function sendLoginEmail(userName, userEmail) {
     console.log(`        └─ To: ${userEmail}`);
     return true;
   } catch (error) {
-    console.error(`[EMAIL] ❌ Error sending login email to ${userEmail}:`, error.message);
+    console.error(
+      `[EMAIL] ❌ Error sending login email to ${userEmail}:`,
+      error.message,
+    );
     return false;
   }
 }
@@ -276,12 +281,14 @@ async function sendLoginEmail(userName, userEmail) {
 async function sendBookingConfirmationEmail(reservation, concert) {
   try {
     if (!transporter) {
-      console.log('[EMAIL] ⚠️ Email transporter not configured. Skipping booking email.');
+      console.log(
+        "[EMAIL] ⚠️ Email transporter not configured. Skipping booking email.",
+      );
       return false;
     }
 
     if (!reservation?.customerEmail || !concert?.name) {
-      console.error('[EMAIL] ❌ Missing required parameters for booking email');
+      console.error("[EMAIL] ❌ Missing required parameters for booking email");
       return false;
     }
 
@@ -289,14 +296,17 @@ async function sendBookingConfirmationEmail(reservation, concert) {
       reservation.customerName,
       reservation.customerEmail,
       reservation,
-      concert
+      concert,
     );
 
     const mailOptions = {
-      from: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@concertticket.com',
+      from:
+        process.env.EMAIL_FROM ||
+        process.env.EMAIL_USER ||
+        "noreply@concertticket.com",
       to: reservation.customerEmail,
       subject: emailTemplate.subject,
-      html: emailTemplate.html
+      html: emailTemplate.html,
     };
 
     const info = await transporter.sendMail(mailOptions);
@@ -305,7 +315,10 @@ async function sendBookingConfirmationEmail(reservation, concert) {
     console.log(`        └─ Reservation: ${reservation.id}`);
     return true;
   } catch (error) {
-    console.error(`[EMAIL] ❌ Error sending booking email to ${reservation.customerEmail}:`, error.message);
+    console.error(
+      `[EMAIL] ❌ Error sending booking email to ${reservation.customerEmail}:`,
+      error.message,
+    );
     return false;
   }
 }
@@ -313,16 +326,18 @@ async function sendBookingConfirmationEmail(reservation, concert) {
 async function testEmailConfiguration() {
   try {
     if (!transporter) {
-      console.log('[EMAIL] ⚠️ Email transporter not configured. Check .env file.');
+      console.log(
+        "[EMAIL] ⚠️ Email transporter not configured. Check .env file.",
+      );
       return false;
     }
 
     await transporter.verify();
-    console.log('[EMAIL] ✅ Email configuration verified successfully');
+    console.log("[EMAIL] ✅ Email configuration verified successfully");
     console.log(`        └─ SMTP: Gmail (Port 465 SSL)`);
     return true;
   } catch (error) {
-    console.error('[EMAIL] ❌ Email configuration error:', error.message);
+    console.error("[EMAIL] ❌ Email configuration error:", error.message);
     return false;
   }
 }
@@ -330,5 +345,5 @@ async function testEmailConfiguration() {
 module.exports = {
   sendLoginEmail,
   sendBookingConfirmationEmail,
-  testEmailConfiguration
+  testEmailConfiguration,
 };
