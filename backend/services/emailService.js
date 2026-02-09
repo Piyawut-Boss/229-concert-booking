@@ -1,63 +1,71 @@
 /**
- * Email Service Module (Updated for Brevo/SMTP Support)
+ * Email Service Module - API Version (Bypasses SMTP Blocking)
  */
 
-const nodemailer = require('nodemailer');
+// ไม่จำเป็นต้องใช้ nodemailer ในการส่งแล้ว แต่เก็บไว้เผื่ออนาคตหรือ Template
+const nodemailer = require('nodemailer'); 
 
-let transporter = null;
+// ฟังก์ชันสำหรับส่งอีเมลผ่าน Brevo API (HTTPS)
+async function sendEmailViaBrevoAPI(toEmail, toName, subject, htmlContent) {
+  const apiKey = process.env.BREVO_API_KEY;
+  const senderEmail = process.env.EMAIL_FROM_ADDRESS || 'noreply@example.com'; // อีเมลผู้ส่ง (ควรตรงกับที่ verify ใน Brevo)
+  const senderName = process.env.EMAIL_FROM_NAME || 'Concert Ticket System';
 
-function initializeTransporter() {
-  // 1. ตรวจสอบการตั้งค่าแบบ Custom SMTP (เช่น Brevo) เป็นอันดับแรก
-  if (process.env.SMTP_HOST && process.env.SMTP_PORT && process.env.SMTP_USER && process.env.SMTP_PASSWORD) {
-    console.log('[EMAIL] ⚙️ Configuring Custom SMTP (Brevo/SendGrid)...');
-    console.log(`        └─ Host: ${process.env.SMTP_HOST}`);
-    console.log(`        └─ Port: ${process.env.SMTP_PORT}`);
-    
-    transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT),
-      secure: process.env.SMTP_SECURE === 'true', 
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD
-      },
-      // [สำคัญมาก] เพิ่มบรรทัดนี้เพื่อบังคับใช้ IPv4 แก้ปัญหา Timeout
-      family: 4, 
-      
-      // การตั้งค่า Timeout
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 10000,
-      // เพิ่ม debug เพื่อให้เห็น log ละเอียดขึ้นถ้ายังพัง
-      logger: true,
-      debug: false
-    });
+  // แยกชื่อและอีเมลจากรูปแบบ "Name <email>" ถ้ามี
+  let finalSenderEmail = senderEmail;
+  let finalSenderName = senderName;
   
-  // 2. รองรับ Gmail ... (ส่วนล่างเหมือนเดิม)
-  } else if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
-    // ... (เหมือนเดิม)
+  if (process.env.EMAIL_FROM) {
+    const match = process.env.EMAIL_FROM.match(/(.*)<(.*)>/);
+    if (match) {
+      finalSenderName = match[1].trim();
+      finalSenderEmail = match[2].trim();
+    } else {
+      finalSenderEmail = process.env.EMAIL_FROM;
+    }
   }
 
-  return transporter;
-}
-
-// เริ่มต้นตรวจสอบการเชื่อมต่อทันทีที่ Server Start
-if (!transporter) {
-  initializeTransporter();
-  if (transporter) {
-    transporter.verify((error, success) => {
-      if (error) {
-        console.error('[EMAIL] ❌ Startup Connection Error:', error.message);
-      } else {
-        console.log('[EMAIL] ✅ Server is ready to send emails');
-      }
+  try {
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'api-key': apiKey,
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        sender: {
+          name: finalSenderName,
+          email: finalSenderEmail
+        },
+        to: [
+          {
+            email: toEmail,
+            name: toName
+          }
+        ],
+        subject: subject,
+        htmlContent: htmlContent
+      })
     });
-  } else {
-    console.log('[EMAIL] ⚠️ No email configuration found.');
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('[EMAIL] ❌ API Error:', JSON.stringify(errorData));
+      return false;
+    }
+
+    const data = await response.json();
+    console.log(`[EMAIL] ✅ Email sent via API MessageId: ${data.messageId}`);
+    return true;
+
+  } catch (error) {
+    console.error('[EMAIL] ❌ Failed to call Brevo API:', error.message);
+    return false;
   }
 }
 
-// --- Email Templates ---
+// --- Email Templates (เหมือนเดิม) ---
 
 function getLoginEmailTemplate(userName, email) {
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
@@ -114,66 +122,47 @@ function getBookingEmailTemplate(customerName, email, reservation, concert) {
   };
 }
 
-// --- Send Functions ---
+// --- Main Export Functions ---
 
 async function sendLoginEmail(userName, userEmail) {
-  try {
-    if (!transporter) initializeTransporter();
-    if (!transporter) return false;
-
-    const template = getLoginEmailTemplate(userName, userEmail);
-    
-    // เลือกผู้ส่ง: EMAIL_FROM > SMTP_USER > EMAIL_USER
-    const sender = process.env.EMAIL_FROM || process.env.SMTP_USER || process.env.EMAIL_USER;
-
-    await transporter.sendMail({
-      from: sender,
-      to: userEmail,
-      subject: template.subject,
-      html: template.html
-    });
-
-    console.log(`[EMAIL] ✅ Login email sent to ${userEmail}`);
-    return true;
-  } catch (error) {
-    console.error(`[EMAIL] ❌ Failed to send login email: ${error.message}`);
-    return false;
+  // ถ้าไม่มี API Key ให้ลองกลับไปใช้ SMTP แบบเดิม (เผื่อไว้) หรือ Log Error
+  if (!process.env.BREVO_API_KEY) {
+     console.error('[EMAIL] ❌ BREVO_API_KEY is missing. Cannot send email via API.');
+     return false;
   }
+
+  const template = getLoginEmailTemplate(userName, userEmail);
+  return await sendEmailViaBrevoAPI(userEmail, userName, template.subject, template.html);
 }
 
 async function sendBookingConfirmationEmail(reservation, concert) {
-  try {
-    if (!transporter) initializeTransporter();
-    if (!transporter) return false;
-
-    const template = getBookingEmailTemplate(
-      reservation.customerName, 
-      reservation.customerEmail, 
-      reservation, 
-      concert
-    );
-
-    // เลือกผู้ส่ง: EMAIL_FROM > SMTP_USER > EMAIL_USER
-    const sender = process.env.EMAIL_FROM || process.env.SMTP_USER || process.env.EMAIL_USER;
-
-    await transporter.sendMail({
-      from: sender,
-      to: reservation.customerEmail,
-      subject: template.subject,
-      html: template.html
-    });
-
-    console.log(`[EMAIL] ✅ Booking email sent to ${reservation.customerEmail}`);
-    return true;
-  } catch (error) {
-    console.error(`[EMAIL] ❌ Failed to send booking email: ${error.message}`);
-    return false;
+  if (!process.env.BREVO_API_KEY) {
+     console.error('[EMAIL] ❌ BREVO_API_KEY is missing. Cannot send email via API.');
+     return false;
   }
+
+  const template = getBookingEmailTemplate(
+    reservation.customerName, 
+    reservation.customerEmail, 
+    reservation, 
+    concert
+  );
+
+  return await sendEmailViaBrevoAPI(
+    reservation.customerEmail, 
+    reservation.customerName, 
+    template.subject, 
+    template.html
+  );
 }
 
-// ฟังก์ชันนี้เก็บไว้เพื่อให้ server.js เรียกใช้ได้ แต่ข้างในไม่ทำอะไรเพราะเรา verify ตอน start แล้ว
+// ฟังก์ชัน Test ไม่จำเป็นต้องใช้แล้ว แต่คงไว้ไม่ให้ error
 async function testEmailConfiguration() {
-  return true;
+  if (process.env.BREVO_API_KEY) {
+    console.log('[EMAIL] ✅ Using Brevo API Mode');
+    return true;
+  }
+  return false;
 }
 
 module.exports = {
