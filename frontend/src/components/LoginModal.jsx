@@ -9,6 +9,13 @@ function LoginModal({ isOpen, onClose }) {
   const [captchaToken, setCaptchaToken] = useState(null)
   const [captchaError, setCaptchaError] = useState(false)
 
+  // Get Turnstile key from global config or environment
+  const siteKey = window.__CONCERT_CONFIG__?.VITE_TURNSTILE_SITE_KEY || 
+                  import.meta.env.VITE_TURNSTILE_SITE_KEY || 
+                  '0x4AAAAAAACY7SOAVZF09WFXk'
+  
+  console.log('LoginModal - Using Turnstile Site Key:', siteKey)
+
   const handleCaptchaChange = (token) => {
     setCaptchaToken(token)
     setCaptchaError(false)
@@ -55,13 +62,17 @@ function LoginModal({ isOpen, onClose }) {
             
             {/* Cloudflare Turnstile Widget */}
             <div className="captcha-container">
-              <Turnstile
-                sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
-                onVerify={handleCaptchaChange}
-                onError={handleCaptchaError}
-                onExpire={handleCaptchaExpire}
-                theme="light"
-              />
+              {siteKey ? (
+                <Turnstile
+                  sitekey={siteKey}
+                  onSuccess={handleCaptchaChange}
+                  onError={handleCaptchaError}
+                  onExpire={handleCaptchaExpire}
+                  theme="light"
+                />
+              ) : (
+                <p className="captcha-error">⚠️ Turnstile Site Key not loaded. Please refresh the page.</p>
+              )}
               {captchaError && (
                 <p className="captcha-error">กรุณายืนยันการตรวจสอบ Cloudflare อีกครั้ง</p>
               )}

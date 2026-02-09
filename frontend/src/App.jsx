@@ -96,7 +96,10 @@ function AppContent() {
 }
 
 function App() {
-  const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const GOOGLE_CLIENT_ID = window.__CONCERT_CONFIG__?.VITE_GOOGLE_CLIENT_ID || 
+                           import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  
+  console.log('App - Using Google Client ID:', GOOGLE_CLIENT_ID);
 
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>

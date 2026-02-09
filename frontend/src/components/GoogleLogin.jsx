@@ -5,6 +5,10 @@ import './GoogleLogin.css'
 
 function GoogleLoginComponent({ onLoginSuccess }) {
   const { login } = useAuth()
+  
+  // Get API base URL from global config or environment
+  const apiBaseUrl = window.__CONCERT_CONFIG__?.VITE_API_BASE_URL ||
+                     import.meta.env.VITE_API_BASE_URL
 
   const handleLoginSuccess = async (credentialResponse) => {
     try {
@@ -32,7 +36,7 @@ function GoogleLoginComponent({ onLoginSuccess }) {
 
       // Send login notification to backend (asynchronous, don't wait)
       try {
-        await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/login`, 
+        await axios.post(`${apiBaseUrl}/api/login`, 
           {
             userName: userData.name,
             userEmail: userData.email,
