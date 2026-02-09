@@ -33,4 +33,5 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
+# Force rebuild - Turnstile widget fix
 CMD ["nginx", "-g", "daemon off;"]
