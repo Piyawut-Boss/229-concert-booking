@@ -57,7 +57,7 @@ function LoginModal({ isOpen, onClose }) {
             <div className="captcha-container">
               <Turnstile
                 sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
-                onVerify={handleCaptchaChange}
+                onSuccess={handleCaptchaChange}
                 onError={handleCaptchaError}
                 onExpire={handleCaptchaExpire}
                 theme="light"
