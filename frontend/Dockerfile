@@ -21,8 +21,11 @@ RUN npm install
 # Copy source code
 COPY . .
 
-# Build application
-RUN npm run build
+# Build application with explicit environment variables
+RUN VITE_API_BASE_URL=$VITE_API_BASE_URL \
+    VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID \
+    VITE_TURNSTILE_SITE_KEY=$VITE_TURNSTILE_SITE_KEY \
+    npm run build
 
 # Production stage
 FROM nginx:alpine
@@ -34,6 +37,4 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
-
-# Force rebuild - Turnstile widget fix
 CMD ["nginx", "-g", "daemon off;"]

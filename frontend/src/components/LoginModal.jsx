@@ -5,9 +5,14 @@ import { FaTimes } from 'react-icons/fa'
 import Turnstile from 'react-turnstile'
 import logo from '../../assets/WaveLogo.png'
 
+// Log environment variables for debugging
+console.log('VITE_TURNSTILE_SITE_KEY:', import.meta.env.VITE_TURNSTILE_SITE_KEY)
+
 function LoginModal({ isOpen, onClose }) {
   const [captchaToken, setCaptchaToken] = useState(null)
   const [captchaError, setCaptchaError] = useState(false)
+
+  const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY || '0x4AAAAAAACY7SOAVZF09WFXk'
 
   const handleCaptchaChange = (token) => {
     setCaptchaToken(token)
@@ -55,13 +60,17 @@ function LoginModal({ isOpen, onClose }) {
             
             {/* Cloudflare Turnstile Widget */}
             <div className="captcha-container">
-              <Turnstile
-                sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
-                onSuccess={handleCaptchaChange}
-                onError={handleCaptchaError}
-                onExpire={handleCaptchaExpire}
-                theme="light"
-              />
+              {siteKey ? (
+                <Turnstile
+                  sitekey={siteKey}
+                  onSuccess={handleCaptchaChange}
+                  onError={handleCaptchaError}
+                  onExpire={handleCaptchaExpire}
+                  theme="light"
+                />
+              ) : (
+                <p className="captcha-error">⚠️ Turnstile Site Key not loaded. Please refresh the page.</p>
+              )}
               {captchaError && (
                 <p className="captcha-error">กรุณายืนยันการตรวจสอบ Cloudflare อีกครั้ง</p>
               )}
