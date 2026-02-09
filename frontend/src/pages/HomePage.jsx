@@ -9,6 +9,22 @@ import {
   FaFilter,
 } from "react-icons/fa";
 
+const getImageUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith("http")) return url;
+
+  const cleanUrl = url.replace(/\\/g, "/");
+
+  const pathWithUploads =
+    cleanUrl.startsWith("uploads") || cleanUrl.startsWith("/uploads")
+      ? cleanUrl.startsWith("/")
+        ? cleanUrl
+        : `/${cleanUrl}`
+      : `/uploads/${cleanUrl.startsWith("/") ? cleanUrl.substring(1) : cleanUrl}`;
+
+  return `${import.meta.env.VITE_API_BASE_URL}${pathWithUploads}`;
+};
+
 function HomePage() {
   const [concerts, setConcerts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -156,7 +172,7 @@ function HomePage() {
       >
         <div className="ticket-left">
           <img
-            src={concert.imageUrl}
+            src={getImageUrl(concert.imageUrl)}
             alt={concert.name}
             className="concert-poster"
             onError={(e) => {
@@ -221,7 +237,7 @@ function HomePage() {
       >
         <div className="horizontal-left">
           <img
-            src={concert.imageUrl}
+            src={getImageUrl(concert.imageUrl)}
             alt={concert.name}
             className="horizontal-poster"
             onError={(e) => {
