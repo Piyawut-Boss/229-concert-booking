@@ -121,7 +121,7 @@ function AdminDashboard() {
     try {
       await axios.put(
         `${import.meta.env.VITE_API_BASE_URL}/api/admin/reservations/${reservationId}`,
-        { status: 'confirmed' }
+        { status: "confirmed" },
       );
       alert("ยืนยันการจองสำเร็จ");
       fetchData();
@@ -162,6 +162,34 @@ function AdminDashboard() {
         (concert.artist?.toLowerCase() || "").includes(searchTerm.toLowerCase())
       );
     }) || [];
+  const handleDeleteConcert = async (concertId) => {
+    if (
+      !confirm(
+        "คุณต้องการลบคอนเสิร์ตนี้ใช่หรือไม่? \n(ต้องไม่มีการจองค้างอยู่จึงจะลบได้)",
+      )
+    )
+      return;
+
+    try {
+      // ดึง token ถ้าจำเป็น (ตาม pattern เดิมของคุณไม่ได้ใส่ headers ใน axios call บางจุด แต่ใส่ไว้เผื่อความชัวร์)
+      const token = localStorage.getItem("adminToken");
+      const config = token
+        ? { headers: { Authorization: `Bearer ${token}` } }
+        : {};
+
+      await axios.delete(
+        `${import.meta.env.VITE_API_BASE_URL}/api/admin/concerts/${concertId}`,
+        config,
+      );
+
+      alert("ลบคอนเสิร์ตสำเร็จ");
+      fetchData(); // รีโหลดข้อมูลใหม่
+    } catch (error) {
+      alert(
+        "เกิดข้อผิดพลาด: " + (error.response?.data?.error || "Unknown error"),
+      );
+    }
+  };
 
   const handleCreateConcert = async (concertData) => {
     try {
@@ -609,6 +637,16 @@ function AdminDashboard() {
                                   ? "ปิดการขาย"
                                   : "เปิดการขาย"}
                               </button>
+                              <button
+                                className="btn btn-danger"
+                                style={{
+                                  marginLeft: "8px",
+                                  backgroundColor: "#dc2626",
+                                }}
+                                onClick={() => handleDeleteConcert(concert.id)}
+                              >
+                                ลบ
+                              </button>
                             </div>
                           </div>
                         </>
@@ -662,12 +700,20 @@ function AdminDashboard() {
                         {new Date(res.reservedAt).toLocaleString("th-TH")}
                       </td>
                       <td>
-                        <span className={`badge ${res.status === 'confirmed' ? 'badge-success' : res.status === 'pending' ? 'badge-warning' : res.status === 'cancelled' ? 'badge-danger' : 'badge-success'}`}>
-                          {res.status === 'confirmed' ? 'ยืนยันแล้ว' : res.status === 'pending' ? 'กำลังรอ' : res.status === 'cancelled' ? 'ยกเลิก' : res.status}
+                        <span
+                          className={`badge ${res.status === "confirmed" ? "badge-success" : res.status === "pending" ? "badge-warning" : res.status === "cancelled" ? "badge-danger" : "badge-success"}`}
+                        >
+                          {res.status === "confirmed"
+                            ? "ยืนยันแล้ว"
+                            : res.status === "pending"
+                              ? "กำลังรอ"
+                              : res.status === "cancelled"
+                                ? "ยกเลิก"
+                                : res.status}
                         </span>
                       </td>
                       <td>
-                        {res.status === 'cancelled' ? (
+                        {res.status === "cancelled" ? (
                           <button
                             className="btn btn-success"
                             style={{ padding: "6px 12px", fontSize: "14px" }}

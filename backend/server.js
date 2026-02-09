@@ -230,6 +230,51 @@ app.post('/api/auth/verify-google', async (req, res) => {
   }
 });
 
+//Admin: Delete concert
+app.delete('/api/admin/concerts/:id', async (req, res) => {
+  const { id } = req.params;
+
+  if (!id) return res.status(400).json({ error: 'Invalid concert ID' });
+
+  const concertId = parseInt(id);
+  await acquireLock(concertId);
+
+  try {
+    // 1. ตรวจสอบว่ามีการจองค้างอยู่หรือไม่?
+    const resCheck = await db.query(
+      'SELECT COUNT(*) as count FROM reservations WHERE concert_id = $1',
+      [concertId]
+    );
+
+    if (parseInt(resCheck.rows[0].count) > 0) {
+      releaseLock(concertId);
+      return res.status(400).json({
+        error: 'ไม่สามารถลบคอนเสิร์ตที่มีการจองค้างอยู่ได้ (กรุณายกเลิกการจองทั้งหมดก่อนลบ)'
+      });
+    }
+
+    // 2. ลบข้อมูลคอนเสิร์ต
+    const result = await db.query(
+      'DELETE FROM concerts WHERE id = $1 RETURNING *',
+      [concertId]
+    );
+
+    if (result.rows.length === 0) {
+      releaseLock(concertId);
+      return res.status(404).json({ error: 'Concert not found' });
+    }
+
+    console.log(`[ADMIN] Concert ${concertId} deleted`);
+    res.json({ success: true, message: 'ลบคอนเสิร์ตสำเร็จ' });
+
+  } catch (error) {
+    console.error('Delete concert error:', error);
+    res.status(500).json({ error: 'Failed to delete concert: ' + error.message });
+  } finally {
+    releaseLock(concertId);
+  }
+});
+
 // Get all concerts
 app.get('/api/concerts', async (req, res) => {
   try {
