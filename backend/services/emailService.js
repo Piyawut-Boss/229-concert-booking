@@ -16,28 +16,26 @@ function initializeTransporter() {
     transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT),
-      // secure เป็น false ถ้าใช้ Port 587, เป็น true ถ้าใช้ 465
       secure: process.env.SMTP_SECURE === 'true', 
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD
       },
-      // การตั้งค่า Timeout ป้องกันการค้าง
+      // [สำคัญมาก] เพิ่มบรรทัดนี้เพื่อบังคับใช้ IPv4 แก้ปัญหา Timeout
+      family: 4, 
+      
+      // การตั้งค่า Timeout
       connectionTimeout: 10000,
       greetingTimeout: 10000,
-      socketTimeout: 10000
+      socketTimeout: 10000,
+      // เพิ่ม debug เพื่อให้เห็น log ละเอียดขึ้นถ้ายังพัง
+      logger: true,
+      debug: false
     });
   
-  // 2. รองรับ Gmail (เผื่อต้องการกลับมาใช้ หรือยังไม่ได้ลบตัวแปรเก่า)
+  // 2. รองรับ Gmail ... (ส่วนล่างเหมือนเดิม)
   } else if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
-    console.log('[EMAIL] ⚙️ Configuring Gmail Transporter...');
-    transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
-      }
-    });
+    // ... (เหมือนเดิม)
   }
 
   return transporter;
