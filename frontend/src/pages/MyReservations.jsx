@@ -4,6 +4,18 @@ import { useAuth } from '../context/AuthContext'
 import { FaTicketAlt, FaCalendarAlt, FaUser, FaEnvelope, FaMusic, FaTimes, FaMapMarkerAlt, FaMicrophone } from 'react-icons/fa'
 import './MyReservations.css'
 
+// --- ฟังก์ชันจัดการ URL รูปภาพ (เพิ่มเข้ามาเพื่อให้รูปแสดงถูกต้อง) ---
+const getImageUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith("http")) return url;
+  const cleanUrl = url.replace(/\\/g, "/");
+  const pathWithUploads = cleanUrl.startsWith("uploads") || cleanUrl.startsWith("/uploads")
+      ? cleanUrl.startsWith("/") ? cleanUrl : `/${cleanUrl}`
+      : `/uploads/${cleanUrl.startsWith("/") ? cleanUrl.substring(1) : cleanUrl}`;
+  return `${import.meta.env.VITE_API_BASE_URL}${pathWithUploads}`;
+};
+// --------------------------------------------------
+
 function MyReservations() {
   const { user } = useAuth()
   const [reservations, setReservations] = useState([])
@@ -19,11 +31,11 @@ function MyReservations() {
       return
     }
 
-    // Fetch reservations automatically when user is logged in
     const fetchReservations = async () => {
       try {
         setLoading(true)
-        const response = await axios.get(`/api/reservations/${user.email}`)
+        // [แก้ไข 1] ใช้ VITE_API_BASE_URL เพื่อยิง API ให้ถูก Address
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/reservations/${user.email}`)
         setReservations(response.data)
       } catch (error) {
         console.error('Error fetching reservations:', error)
@@ -36,17 +48,15 @@ function MyReservations() {
     fetchReservations()
   }, [user])
 
-  // Function to handle concert card click and fetch details
   const handleConcertCardClick = async (reservation) => {
     try {
       setSelectedReservation(reservation)
-      // Fetch concert details
-      const response = await axios.get(`/api/concerts/${reservation.concertId}`)
+      // [แก้ไข 2] ใช้ VITE_API_BASE_URL ตรงนี้ด้วย
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/concerts/${reservation.concertId}`)
       setConcertDetails(response.data)
       setShowModal(true)
     } catch (error) {
       console.error('Error fetching concert details:', error)
-      // Show reservation details even if concert fetch fails
       setConcertDetails(null)
       setShowModal(true)
     }
@@ -94,11 +104,12 @@ function MyReservations() {
         <div className="user-profile-card">
           <div className="profile-header">
             <div className="profile-avatar">
-              {user.name.charAt(0).toUpperCase()}
+              {/* [แก้ไข 3] ใส่ Optional Chaining (?.) ป้องกัน Crash ถ้า user.name ไม่มีค่า */}
+              {(user?.name || 'U').charAt(0).toUpperCase()}
             </div>
             <div className="profile-info">
-              <h3>{user.name}</h3>
-              <p>{user.email}</p>
+              <h3>{user?.name || 'User'}</h3>
+              <p>{user?.email}</p>
             </div>
           </div>
           <div className="profile-stats">
@@ -159,7 +170,7 @@ function MyReservations() {
 
             {/* Reservations Grid */}
             <div className="reservations-grid">
-              {filteredReservations.map((reservation, index) => (
+              {filteredReservations.map((reservation) => (
                 <div 
                   key={reservation.id} 
                   className="reservation-card"
@@ -173,7 +184,8 @@ function MyReservations() {
                         <FaMusic />
                       </div>
                       <div>
-                        <h3>{reservation.concert?.name || reservation.concertName}</h3>
+                        {/* ป้องกัน Crash ถ้า reservation.concert เป็น null */}
+                        <h3>{reservation.concert?.name || reservation.concertName || 'Unknown Concert'}</h3>
                         <p className="reservation-id">#{reservation.id}</p>
                       </div>
                     </div>
@@ -275,10 +287,14 @@ function MyReservations() {
             <div className="modal-body">
               {concertDetails ? (
                 <div className="concert-details">
-                  {/* Concert Image */}
+                  {/* [แก้ไข 4] แสดงรูปภาพคอนเสิร์ตใน Modal ให้ถูกต้อง */}
                   {concertDetails.imageUrl && (
                     <div className="concert-image">
-                      <img src={concertDetails.imageUrl} alt={concertDetails.name} />
+                      <img 
+                        src={getImageUrl(concertDetails.imageUrl)} 
+                        alt={concertDetails.name}
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
                     </div>
                   )}
 
@@ -362,7 +378,7 @@ function MyReservations() {
                 <div className="concert-details">
                   <div className="concert-info">
                     <h3 className="concert-title">{selectedReservation.concert?.name || selectedReservation.concertName}</h3>
-                    <p className="no-details">ไม่สามารถโหลดรายละเอียดคอนเสิร์ต</p>
+                    <p className="no-details">กำลังโหลดข้อมูล หรือ ไม่พบข้อมูลคอนเสิร์ต...</p>
                     
                     {/* Show available reservation info */}
                     <div className="reservation-summary">
